@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using PersonalFinanceTracker.Data;
 using PersonalFinanceTracker.Repositories.Implementations;
 using PersonalFinanceTracker.Repositories.Interfaces;
+using PersonalFinanceTracker.Services.Implementations;
+using PersonalFinanceTracker.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,9 @@ builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+
+// Register Services
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 var app = builder.Build();
 
