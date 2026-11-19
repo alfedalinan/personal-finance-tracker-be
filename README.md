@@ -29,10 +29,15 @@ A robust and lightweight Personal Finance Tracker API built with **.NET 10** and
 ## Project Structure
 - `Entities/`: Domain models (`Account`, `Category`, `Transaction`, etc.)
 - `Data/`: Entity Framework Core database context (`FinanceTrackerDbContext`)
+- `Repositories/`: Data access layer abstraction and concrete implementations
+  - `Interfaces/`: Repository contracts (`IAccountRepository.cs`, `ICategoryRepository.cs`, `ITransactionRepository.cs`)
+  - `Implementations/`: EF Core concrete repository classes (`AccountRepository.cs`, `CategoryRepository.cs`, `TransactionRepository.cs`)
+- `PersonalFinanceTracker.Tests/`: Unit tests validating repository logic (`AccountRepositoryTests.cs`, `CategoryRepositoryTests.cs`, `TransactionRepositoryTests.cs`)
 - `Program.cs`: Application entry point and database service registration.
 
 ## Current Progress & Roadmap
 - [x] **Data Layer**: Core entities, relationships, and SQLite DbContext configured.
-- [ ] **API Endpoints**: CRUD operations for Accounts, Categories, and Transactions.
+- [x] **Data Access & Repository Layer**: Interfaces and EF Core concrete implementations with unit tests.
+- [ ] **API Controllers & Endpoints**: CRUD operations for Accounts, Categories, and Transactions.
 - [ ] **Validation & Error Handling**: Robust input validation and exception middleware.
-- [ ] **Testing**: Unit and integration tests for services and endpoints.
+- [ ] **Testing**: Additional integration tests for services and endpoints.
