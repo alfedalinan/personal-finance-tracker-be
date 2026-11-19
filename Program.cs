@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PersonalFinanceTracker.Data;
+using PersonalFinanceTracker.Repositories.Implementations;
+using PersonalFinanceTracker.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,11 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<FinanceTrackerDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=financetracker.db"));
+
+// Register Repositories
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 
 var app = builder.Build();
 
