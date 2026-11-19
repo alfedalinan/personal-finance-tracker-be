@@ -16,4 +16,10 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="PersonalFinanceTracker.Tests\**" />
+    <Content Remove="PersonalFinanceTracker.Tests\**" />
+    <None Remove="PersonalFinanceTracker.Tests\**" />
+  </ItemGroup>
+
 </Project>
