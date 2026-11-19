@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PersonalFinanceTracker.Data;
 using PersonalFinanceTracker.Repositories.Implementations;
 using PersonalFinanceTracker.Repositories.Interfaces;
+using PersonalFinanceTracker.RouteHandlers;
 using PersonalFinanceTracker.Services.Implementations;
 using PersonalFinanceTracker.Services.Interfaces;
 
@@ -64,15 +65,7 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
-app.MapGet("/api/accounts/{accountId}/transactions", async (int accountId, ITransactionService transactionService) =>
-{
-    var result = await transactionService.GetAccountTransactionsAndBalanceAsync(accountId);
-    if (result == null)
-    {
-        return Results.NotFound(new { message = $"Account with ID {accountId} not found." });
-    }
-    return Results.Ok(result);
-})
+app.MapGet("/api/accounts/{accountId}/transactions", TransactionRouteHandlers.GetAccountTransactionsAndBalance)
 .WithName("GetAccountTransactionsAndBalance");
 
 app.Run();
