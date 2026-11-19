@@ -12,6 +12,14 @@ public static class DbInitializer
 
         context.Database.EnsureCreated();
 
+        InitializeAccounts(context);
+        InitializeCategories(context);
+
+        context.SaveChanges();
+    }
+
+    public static void InitializeAccounts(FinanceTrackerDbContext context)
+    {
         if (context.Accounts.Any())
         {
             return;
@@ -34,9 +42,6 @@ public static class DbInitializer
         };
 
         context.Accounts.AddRange(accounts);
-        context.SaveChanges();
-
-        InitializeCategories(context);
     }
 
     public static void InitializeCategories(FinanceTrackerDbContext context)
@@ -61,6 +66,5 @@ public static class DbInitializer
         };
 
         context.Categories.AddRange(categories);
-        context.SaveChanges();
     }
 }
