@@ -35,5 +35,32 @@ public static class DbInitializer
 
         context.Accounts.AddRange(accounts);
         context.SaveChanges();
+
+        InitializeCategories(context);
+    }
+
+    public static void InitializeCategories(FinanceTrackerDbContext context)
+    {
+        if (context.Categories.Any())
+        {
+            return;
+        }
+
+        var categories = new Category[]
+        {
+            new Category { Name = "Utilities", Type = CategoryType.Expense },
+            new Category { Name = "Mortgage", Type = CategoryType.Expense },
+            new Category { Name = "Salary", Type = CategoryType.Income },
+            new Category { Name = "Bonuses", Type = CategoryType.Income },
+            new Category { Name = "Groceries", Type = CategoryType.Expense },
+            new Category { Name = "Baby Needs", Type = CategoryType.Expense },
+            new Category { Name = "Leisure", Type = CategoryType.Expense },
+            new Category { Name = "Repairs", Type = CategoryType.Expense },
+            new Category { Name = "Food Delivery", Type = CategoryType.Expense },
+            new Category { Name = "Others", Type = CategoryType.Expense }
+        };
+
+        context.Categories.AddRange(categories);
+        context.SaveChanges();
     }
 }
