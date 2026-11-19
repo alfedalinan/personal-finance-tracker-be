@@ -4,3 +4,8 @@ GET {{PersonalFinanceTracker_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{PersonalFinanceTracker_HostAddress}}/api/accounts/1/transactions
+Accept: application/json
+
+###
