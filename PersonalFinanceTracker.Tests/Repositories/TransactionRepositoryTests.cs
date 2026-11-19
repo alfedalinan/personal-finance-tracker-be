@@ -162,4 +162,29 @@ public class TransactionRepositoryTests
         var deleted = await context.Transactions.FindAsync(transaction.Id);
         Assert.IsNull(deleted);
     }
+
+    [TestMethod]
+    public async Task GetTransactionsByAccountIdAsync_ReturnsFilteredAndOrderedTransactions()
+    {
+        using var context = GetInMemoryDbContext();
+        var account1 = new Account { Id = 1, Name = "Checking", Type = "Bank", CurrentBalance = 1000m };
+        var account2 = new Account { Id = 2, Name = "Savings", Type = "Bank", CurrentBalance = 5000m };
+        var category = new Category { Id = 1, Name = "Food", Type = CategoryType.Expense };
+        context.Accounts.AddRange(account1, account2);
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        var t1 = new Transaction { AccountId = 1, CategoryId = 1, Amount = -10m, Description = "Old", DateOfTransaction = DateTime.UtcNow.AddDays(-2) };
+        var t2 = new Transaction { AccountId = 1, CategoryId = 1, Amount = -20m, Description = "New", DateOfTransaction = DateTime.UtcNow.AddDays(-1) };
+        var t3 = new Transaction { AccountId = 2, CategoryId = 1, Amount = -30m, Description = "Other", DateOfTransaction = DateTime.UtcNow };
+        context.Transactions.AddRange(t1, t2, t3);
+        await context.SaveChangesAsync();
+
+        var repo = new TransactionRepository(context);
+        var result = (await repo.GetTransactionsByAccountIdAsync(1)).ToList();
+
+        Assert.AreEqual(2, result.Count);
+        Assert.AreEqual("New", result[0].Description); // Ordered descending by date
+        Assert.AreEqual("Old", result[1].Description);
+    }
 }

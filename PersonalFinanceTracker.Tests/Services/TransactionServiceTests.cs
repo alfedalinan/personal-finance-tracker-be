@@ -67,4 +67,51 @@ public class TransactionServiceTests
         // Act & Assert
         await Assert.ThrowsExceptionAsync<ArgumentException>(() => _service.CreateTransactionAsync(request));
     }
+
+    [TestMethod]
+    public async Task GetAccountTransactionsAndBalanceAsync_ShouldReturnNull_WhenAccountNotFound()
+    {
+        // Arrange
+        _mockAccountRepo.Setup(r => r.GetAccountByIdAsync(99)).ReturnsAsync((Account?)null);
+
+        // Act
+        var result = await _service.GetAccountTransactionsAndBalanceAsync(99);
+
+        // Assert
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public async Task GetAccountTransactionsAndBalanceAsync_ShouldReturnAccountTransactionsAndRemainingBalance_WhenAccountExists()
+    {
+        // Arrange
+        var account = new Account { Id = 1, Name = "Savings", Type = "Bank", CurrentBalance = 1000m };
+        _mockAccountRepo.Setup(r => r.GetAccountByIdAsync(1)).ReturnsAsync(account);
+
+        var transactions = new List<Transaction>
+        {
+            new Transaction
+            {
+                Id = 1,
+                AccountId = 1,
+                Amount = -150.00m,
+                Description = "Groceries",
+                DateOfTransaction = DateTime.UtcNow,
+                Category = new Category { Name = "Food", Type = CategoryType.Expense }
+            }
+        };
+        _mockTransactionRepo.Setup(r => r.GetTransactionsByAccountIdAsync(1)).ReturnsAsync(transactions);
+
+        // Act
+        var result = await _service.GetAccountTransactionsAndBalanceAsync(1);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(1, result.AccountId);
+        Assert.AreEqual("Savings", result.AccountName);
+        Assert.AreEqual(1000m, result.CurrentBalance);
+        Assert.AreEqual(850.00m, result.RemainingBalance);
+        Assert.AreEqual(1, result.Transactions.Count());
+        Assert.AreEqual(-150.00m, result.Transactions.First().Amount);
+    }
 }

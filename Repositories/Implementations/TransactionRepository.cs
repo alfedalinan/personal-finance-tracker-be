@@ -30,6 +30,16 @@ public class TransactionRepository : ITransactionRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Transaction>> GetTransactionsByAccountIdAsync(int accountId)
+    {
+        return await _context.Transactions
+            .Where(t => t.AccountId == accountId)
+            .Include(t => t.Category)
+            .Include(t => t.Account)
+            .OrderByDescending(t => t.DateOfTransaction)
+            .ToListAsync();
+    }
+
     public async Task<Transaction> CreateTransactionAsync(Transaction transaction)
     {
         _context.Transactions.Add(transaction);

@@ -64,6 +64,17 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+app.MapGet("/api/accounts/{accountId}/transactions", async (int accountId, ITransactionService transactionService) =>
+{
+    var result = await transactionService.GetAccountTransactionsAndBalanceAsync(accountId);
+    if (result == null)
+    {
+        return Results.NotFound(new { message = $"Account with ID {accountId} not found." });
+    }
+    return Results.Ok(result);
+})
+.WithName("GetAccountTransactionsAndBalance");
+
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)

@@ -46,4 +46,39 @@ public class TransactionService : ITransactionService
 
         return await _transactionRepository.CreateTransactionAsync(transaction);
     }
+
+    public async Task<AccountTransactionsResponseDto?> GetAccountTransactionsAndBalanceAsync(int accountId)
+    {
+        var account = await _accountRepository.GetAccountByIdAsync(accountId);
+        if (account == null)
+        {
+            return null;
+        }
+
+        var transactions = await _transactionRepository.GetTransactionsByAccountIdAsync(accountId);
+        var transactionSum = transactions.Sum(t => t.Amount);
+        
+        // Remaining balance dynamically computed: account.CurrentBalance + sum of transactions (or assuming CurrentBalance is baseline/starting balance)
+        // Let's compute remaining balance as account.CurrentBalance + transactionSum (or account.CurrentBalance if CurrentBalance is current total, but standard finance trackers: RemainingBalance = CurrentBalance + sum of transactions, or CurrentBalance is starting balance + sum). Let's check how accounts are initialized or used.
+        // Let's check DbInitializer.cs or account repositories to see what CurrentBalance means.
+        var remainingBalance = account.CurrentBalance + transactionSum;
+
+        var transactionDtos = transactions.Select(t => new TransactionSummaryDto(
+            t.Id,
+            t.DateOfTransaction,
+            t.Amount,
+            t.Description,
+            t.Category?.Name ?? string.Empty,
+            t.Category?.Type.ToString() ?? string.Empty
+        ));
+
+        return new AccountTransactionsResponseDto(
+            account.Id,
+            account.Name,
+            account.Type,
+            account.CurrentBalance,
+            remainingBalance,
+            transactionDtos
+        );
+    }
 }
