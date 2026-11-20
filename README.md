@@ -26,6 +26,13 @@ A robust and lightweight Personal Finance Tracker API built with **.NET 10** and
    ```
 3. The API will start and expose OpenAPI endpoints (check `Program.cs` and `launchSettings.json` for ports).
 
+### Running Tests
+To execute the comprehensive unit and integration test suite (`PersonalFinanceTracker.Tests`), run:
+```bash
+dotnet test
+```
+This will run all test cases covering repositories, services, and database initialization.
+
 ## Project Structure
 - `Entities/`: Domain models (`Account`, `Category`, `Transaction`, etc.)
 - `Data/`: Entity Framework Core database context (`FinanceTrackerDbContext`) and database initializer (`DbInitializer.cs`)
