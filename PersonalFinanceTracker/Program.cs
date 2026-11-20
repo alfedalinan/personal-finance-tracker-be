@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PersonalFinanceTracker.Data;
 using PersonalFinanceTracker.Repositories.Implementations;
 using PersonalFinanceTracker.Repositories.Interfaces;
@@ -67,6 +67,9 @@ app.MapGet("/weatherforecast", () =>
 
 app.MapGet("/api/accounts/{accountId}/transactions", TransactionRouteHandlers.GetAccountTransactionsAndBalance)
 .WithName("GetAccountTransactionsAndBalance");
+
+app.MapPost("/api/transactions", TransactionRouteHandlers.CreateTransaction)
+.WithName("CreateTransaction");
 
 app.Run();
 
