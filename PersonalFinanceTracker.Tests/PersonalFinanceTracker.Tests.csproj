@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PersonalFinanceTracker.csproj" />
+    <ProjectReference Include="..\PersonalFinanceTracker\PersonalFinanceTracker.csproj" />
   </ItemGroup>
 
 </Project>
