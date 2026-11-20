@@ -42,6 +42,27 @@ public class TransactionRouteHandlerTests
     }
 
     [TestMethod]
+    public async Task CreateTransaction_ShouldReturnCreated_WhenAmountIsNegative()
+    {
+        // Arrange
+        var request = new CreateTransactionRequestDto(1, 1, "Groceries", -150.00m);
+        var created = new Transaction { Id = 1, AccountId = 1, CategoryId = 1, Amount = -150.00m, Description = "Groceries" };
+        _mockTransactionService.Setup(s => s.CreateTransactionAsync(request)).ReturnsAsync(created);
+
+        // Act
+        var result = await TransactionRouteHandlers.CreateTransaction(request, _mockTransactionService.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var httpContext = new DefaultHttpContext();
+        var services = new ServiceCollection().AddLogging().BuildServiceProvider();
+        httpContext.RequestServices = services;
+
+        await result.ExecuteAsync(httpContext);
+        Assert.AreEqual(StatusCodes.Status201Created, httpContext.Response.StatusCode);
+    }
+
+    [TestMethod]
     public async Task CreateTransaction_ShouldReturnNotFound_WhenArgumentExceptionThrown()
     {
         // Arrange
