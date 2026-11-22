@@ -3,6 +3,7 @@ using PersonalFinanceTracker.Data;
 using PersonalFinanceTracker.Repositories.Implementations;
 using PersonalFinanceTracker.Repositories.Interfaces;
 using PersonalFinanceTracker.RouteHandlers;
+using PersonalFinanceTracker.Services.Dtos;
 using PersonalFinanceTracker.Services.Implementations;
 using PersonalFinanceTracker.Services.Interfaces;
 
@@ -43,56 +44,93 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+app.MapOpenApi();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    var summaries = new[]
+    {
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
+
+    app.MapGet("/weatherforecast", () =>
+    {
+        var forecast =  Enumerable.Range(1, 5).Select(index =>
+            new WeatherForecast
+            (
+                DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                Random.Shared.Next(-20, 55),
+                summaries[Random.Shared.Next(summaries.Length)]
+            ))
+            .ToArray();
+        return forecast;
+    })
+    .WithName("GetWeatherForecast");
 }
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
 app.MapGet("/api/accounts/{accountId}/transactions", TransactionRouteHandlers.GetAccountTransactionsAndBalance)
-.WithName("GetAccountTransactionsAndBalance");
+.WithName("GetAccountTransactionsAndBalance")
+.Produces<AccountTransactionsResponseDto>(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status400BadRequest)
+.Produces(StatusCodes.Status404NotFound)
+.WithSummary("Get account transactions and balance")
+.WithDescription("Retrieves transactions and balance summary for an account within an optional date range.");
 
 app.MapGet("/api/accounts", AccountRouteHandlers.GetAllAccounts)
-.WithName("GetAllAccounts");
+.WithName("GetAllAccounts")
+.Produces<IEnumerable<AccountResponseDto>>(StatusCodes.Status200OK)
+.WithSummary("Get all accounts")
+.WithDescription("Retrieves a list of all bank accounts.");
 
 app.MapGet("/api/accounts/{id}", AccountRouteHandlers.GetAccountById)
-.WithName("GetAccountById");
+.WithName("GetAccountById")
+.Produces<AccountResponseDto>(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status404NotFound)
+.WithSummary("Get account by ID")
+.WithDescription("Retrieves a specific bank account by its unique identifier.");
 
 app.MapPost("/api/accounts", AccountRouteHandlers.CreateAccount)
-.WithName("CreateAccount");
+.WithName("CreateAccount")
+.Produces<AccountResponseDto>(StatusCodes.Status201Created)
+.Produces(StatusCodes.Status400BadRequest)
+.WithSummary("Create a new account")
+.WithDescription("Creates a new bank account with the specified details.");
 
 app.MapGet("/api/categories", CategoryRouteHandlers.GetAllCategories)
-.WithName("GetAllCategories");
+.WithName("GetAllCategories")
+.Produces<IEnumerable<CategoryResponseDto>>(StatusCodes.Status200OK)
+.WithSummary("Get all categories")
+.WithDescription("Retrieves a list of all transaction categories.");
 
 app.MapPost("/api/categories", CategoryRouteHandlers.CreateCategory)
-.WithName("CreateCategory");
+.WithName("CreateCategory")
+.Produces<CategoryResponseDto>(StatusCodes.Status201Created)
+.Produces(StatusCodes.Status400BadRequest)
+.WithSummary("Create a new category")
+.WithDescription("Creates a new transaction category with the specified details.");
 
 app.MapPost("/api/transactions", TransactionRouteHandlers.CreateTransaction)
-.WithName("CreateTransaction");
+.WithName("CreateTransaction")
+.Produces<TransactionSummaryDto>(StatusCodes.Status201Created)
+.Produces(StatusCodes.Status400BadRequest)
+.Produces(StatusCodes.Status404NotFound)
+.WithSummary("Create a new transaction")
+.WithDescription("Creates a new financial transaction for an account.");
 
 app.MapPut("/api/transactions/{id}", TransactionRouteHandlers.UpdateTransaction)
-.WithName("UpdateTransaction");
+.WithName("UpdateTransaction")
+.Produces<TransactionSummaryDto>(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status400BadRequest)
+.Produces(StatusCodes.Status404NotFound)
+.WithSummary("Update an existing transaction")
+.WithDescription("Updates an existing financial transaction by its unique identifier.");
 
 app.MapDelete("/api/transactions/{id}", TransactionRouteHandlers.DeleteTransaction)
-.WithName("DeleteTransaction");
+.WithName("DeleteTransaction")
+.Produces(StatusCodes.Status204NoContent)
+.Produces(StatusCodes.Status404NotFound)
+.WithSummary("Delete a transaction")
+.WithDescription("Deletes a financial transaction by its unique identifier.");
 
 app.Run();
 
