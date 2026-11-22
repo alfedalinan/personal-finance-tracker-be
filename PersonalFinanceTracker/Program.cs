@@ -88,6 +88,12 @@ app.MapPost("/api/categories", CategoryRouteHandlers.CreateCategory)
 app.MapPost("/api/transactions", TransactionRouteHandlers.CreateTransaction)
 .WithName("CreateTransaction");
 
+app.MapPut("/api/transactions/{id}", TransactionRouteHandlers.UpdateTransaction)
+.WithName("UpdateTransaction");
+
+app.MapDelete("/api/transactions/{id}", TransactionRouteHandlers.DeleteTransaction)
+.WithName("DeleteTransaction");
+
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)

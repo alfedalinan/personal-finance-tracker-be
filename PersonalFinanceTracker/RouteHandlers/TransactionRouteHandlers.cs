@@ -28,4 +28,30 @@ public static class TransactionRouteHandlers
             return Results.NotFound(new { message = ex.Message });
         }
     }
+
+    public static async Task<IResult> UpdateTransaction(int id, CreateTransactionRequestDto request, ITransactionService transactionService)
+    {
+        try
+        {
+            var updatedTransaction = await transactionService.UpdateTransactionAsync(id, request);
+            return Results.Ok(updatedTransaction);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.NotFound(new { message = ex.Message });
+        }
+    }
+
+    public static async Task<IResult> DeleteTransaction(int id, ITransactionService transactionService)
+    {
+        try
+        {
+            await transactionService.DeleteTransactionAsync(id);
+            return Results.NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.NotFound(new { message = ex.Message });
+        }
+    }
 }
