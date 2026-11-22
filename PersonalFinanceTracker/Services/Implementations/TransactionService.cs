@@ -78,12 +78,15 @@ public class TransactionService : ITransactionService
         var category = await GetAndValidateCategoryAsync(request.CategoryId);
 
         using var dbTransaction = _context.Database.IsRelational()
-            ? await _context.Database.BeginTransactionAsync()
+            ? await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable)
             : null;
 
         try
         {
+            var beforeBalance = account.CurrentBalance;
             ApplyTransactionEffect(account, category.Type, request.Amount);
+            var afterBalance = account.CurrentBalance;
+
             await _accountRepository.UpdateAccountAsync(account);
 
             var transaction = new Transaction
@@ -92,6 +95,8 @@ public class TransactionService : ITransactionService
                 CategoryId = request.CategoryId,
                 Description = request.Description,
                 Amount = request.Amount,
+                BeforeBalance = beforeBalance,
+                AfterBalance = afterBalance,
                 DateOfTransaction = request.DateOfTransaction ?? DateTime.UtcNow
             };
 
@@ -106,6 +111,8 @@ public class TransactionService : ITransactionService
                 createdTransaction.Id,
                 createdTransaction.DateOfTransaction,
                 createdTransaction.Amount,
+                createdTransaction.BeforeBalance,
+                createdTransaction.AfterBalance,
                 createdTransaction.Description,
                 category.Name,
                 category.Type.ToString()
@@ -129,72 +136,7 @@ public class TransactionService : ITransactionService
             throw new ArgumentException($"Transaction with ID {id} not found.");
         }
 
-        var oldAccount = await GetAndValidateAccountAsync(existingTransaction.AccountId);
-        var oldCategory = await GetAndValidateCategoryAsync(existingTransaction.CategoryId);
-
-        var newAccount = request.AccountId == existingTransaction.AccountId
-            ? oldAccount
-            : await GetAndValidateAccountAsync(request.AccountId);
-
-        var newCategory = request.CategoryId == existingTransaction.CategoryId
-            ? oldCategory
-            : await GetAndValidateCategoryAsync(request.CategoryId);
-
-        using var dbTransaction = _context.Database.IsRelational()
-            ? await _context.Database.BeginTransactionAsync()
-            : null;
-
-        try
-        {
-            ReverseTransactionEffect(oldAccount, oldCategory.Type, existingTransaction.Amount);
-            if (oldAccount.Id != newAccount.Id)
-            {
-                await _accountRepository.UpdateAccountAsync(oldAccount);
-            }
-
-            ApplyTransactionEffect(newAccount, newCategory.Type, request.Amount);
-            if (oldAccount.Id != newAccount.Id)
-            {
-                await _accountRepository.UpdateAccountAsync(newAccount);
-            }
-            else
-            {
-                await _accountRepository.UpdateAccountAsync(oldAccount);
-            }
-
-            existingTransaction.AccountId = request.AccountId;
-            existingTransaction.CategoryId = request.CategoryId;
-            existingTransaction.Description = request.Description;
-            existingTransaction.Amount = request.Amount;
-            if (request.DateOfTransaction.HasValue)
-            {
-                existingTransaction.DateOfTransaction = request.DateOfTransaction.Value;
-            }
-
-            await _transactionRepository.UpdateTransactionAsync(existingTransaction);
-
-            if (dbTransaction != null)
-            {
-                await dbTransaction.CommitAsync();
-            }
-
-            return new TransactionSummaryDto(
-                existingTransaction.Id,
-                existingTransaction.DateOfTransaction,
-                existingTransaction.Amount,
-                existingTransaction.Description,
-                newCategory.Name,
-                newCategory.Type.ToString()
-            );
-        }
-        catch
-        {
-            if (dbTransaction != null)
-            {
-                await dbTransaction.RollbackAsync();
-            }
-            throw;
-        }
+        throw new InvalidOperationException("Direct updates on existing ledger transactions are disabled to preserve historical audit integrity. Please post a compensating/reversing transaction instead.");
     }
 
     public async Task DeleteTransactionAsync(int id)
@@ -205,33 +147,7 @@ public class TransactionService : ITransactionService
             throw new ArgumentException($"Transaction with ID {id} not found.");
         }
 
-        var account = await GetAndValidateAccountAsync(transaction.AccountId);
-        var category = await GetAndValidateCategoryAsync(transaction.CategoryId);
-
-        using var dbTransaction = _context.Database.IsRelational()
-            ? await _context.Database.BeginTransactionAsync()
-            : null;
-
-        try
-        {
-            ReverseTransactionEffect(account, category.Type, transaction.Amount);
-            await _accountRepository.UpdateAccountAsync(account);
-
-            await _transactionRepository.DeleteTransactionAsync(id);
-
-            if (dbTransaction != null)
-            {
-                await dbTransaction.CommitAsync();
-            }
-        }
-        catch
-        {
-            if (dbTransaction != null)
-            {
-                await dbTransaction.RollbackAsync();
-            }
-            throw;
-        }
+        throw new InvalidOperationException("Direct deletions on existing ledger transactions are disabled to preserve historical audit integrity. Please post a compensating/reversing transaction instead.");
     }
 
     public async Task<AccountTransactionsResponseDto?> GetAccountTransactionsAndBalanceAsync(int accountId)
@@ -249,6 +165,8 @@ public class TransactionService : ITransactionService
             t.Id,
             t.DateOfTransaction,
             t.Amount,
+            t.BeforeBalance,
+            t.AfterBalance,
             t.Description,
             t.Category?.Name ?? string.Empty,
             t.Category?.Type.ToString() ?? string.Empty

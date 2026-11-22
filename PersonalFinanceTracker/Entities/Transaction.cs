@@ -12,6 +12,12 @@ public class Transaction
     [Column(TypeName = "decimal(18,2)")]
     public decimal Amount { get; set; }
 
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal BeforeBalance { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal AfterBalance { get; set; }
+
     [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
 

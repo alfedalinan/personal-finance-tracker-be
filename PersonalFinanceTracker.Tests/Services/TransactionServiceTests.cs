@@ -62,7 +62,29 @@ public class TransactionServiceTests
     }
 
     [TestMethod]
-    public async Task UpdateTransactionAsync_ReversesOldAndAppliesNew_UpdatesBalance()
+    public async Task CreateTransactionAsync_SetsBeforeAndAfterBalancesCorrectly()
+    {
+        using var context = GetInMemoryDbContext();
+        var accountRepo = new AccountRepository(context);
+        var categoryRepo = new CategoryRepository(context);
+        var transactionRepo = new TransactionRepository(context);
+        var service = new TransactionService(transactionRepo, accountRepo, categoryRepo, context);
+
+        var account = await accountRepo.CreateAccountAsync(new Account { Name = "Checking", Type = "Bank", CurrentBalance = 1000m });
+        var incomeCategory = await categoryRepo.CreateCategoryAsync(new Category { Name = "Salary", Type = CategoryType.Income });
+        var expenseCategory = await categoryRepo.CreateCategoryAsync(new Category { Name = "Groceries", Type = CategoryType.Expense });
+
+        var t1 = await service.CreateTransactionAsync(new CreateTransactionRequestDto(account.Id, incomeCategory.Id, "Pay", 500m));
+        Assert.AreEqual(1000m, t1.BeforeBalance);
+        Assert.AreEqual(1500m, t1.AfterBalance);
+
+        var t2 = await service.CreateTransactionAsync(new CreateTransactionRequestDto(account.Id, expenseCategory.Id, "Food", 200m));
+        Assert.AreEqual(1500m, t2.BeforeBalance);
+        Assert.AreEqual(1300m, t2.AfterBalance);
+    }
+
+    [TestMethod]
+    public async Task UpdateTransactionAsync_ThrowsInvalidOperationException_EnforcingImmutability()
     {
         using var context = GetInMemoryDbContext();
         var accountRepo = new AccountRepository(context);
@@ -72,22 +94,15 @@ public class TransactionServiceTests
 
         var account = await accountRepo.CreateAccountAsync(new Account { Name = "Checking", Type = "Bank", CurrentBalance = 1000m });
         var expenseCategory = await categoryRepo.CreateCategoryAsync(new Category { Name = "Food", Type = CategoryType.Expense });
-        var incomeCategory = await categoryRepo.CreateCategoryAsync(new Category { Name = "Bonus", Type = CategoryType.Income });
 
         var created = await service.CreateTransactionAsync(new CreateTransactionRequestDto(account.Id, expenseCategory.Id, "Lunch", 100.00m));
-        // Balance should be 900m
 
-        var updateRequest = new CreateTransactionRequestDto(account.Id, incomeCategory.Id, "Corrected Bonus", 300.00m);
-        var updated = await service.UpdateTransactionAsync(created.Id, updateRequest);
-
-        Assert.IsNotNull(updated);
-        var updatedAccount = await accountRepo.GetAccountByIdAsync(account.Id);
-        // Old expense 100 reversed -> 1000, new income 300 applied -> 1300
-        Assert.AreEqual(1300.00m, updatedAccount!.CurrentBalance);
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(() =>
+            service.UpdateTransactionAsync(created.Id, new CreateTransactionRequestDto(account.Id, expenseCategory.Id, "Updated Lunch", 120.00m)));
     }
 
     [TestMethod]
-    public async Task DeleteTransactionAsync_ReversesTransactionEffect_UpdatesBalance()
+    public async Task DeleteTransactionAsync_ThrowsInvalidOperationException_EnforcingImmutability()
     {
         using var context = GetInMemoryDbContext();
         var accountRepo = new AccountRepository(context);
@@ -99,13 +114,9 @@ public class TransactionServiceTests
         var category = await categoryRepo.CreateCategoryAsync(new Category { Name = "Utilities", Type = CategoryType.Expense });
 
         var created = await service.CreateTransactionAsync(new CreateTransactionRequestDto(account.Id, category.Id, "Power Bill", 150.00m));
-        // Balance should be 850m
 
-        await service.DeleteTransactionAsync(created.Id);
-
-        var updatedAccount = await accountRepo.GetAccountByIdAsync(account.Id);
-        // Balance should return to 1000m
-        Assert.AreEqual(1000.00m, updatedAccount!.CurrentBalance);
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(() =>
+            service.DeleteTransactionAsync(created.Id));
     }
 
     [TestMethod]

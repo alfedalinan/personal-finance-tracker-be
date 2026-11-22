@@ -39,6 +39,8 @@ public class FinanceTrackerDbContext : DbContext
         {
             entity.HasKey(t => t.Id);
             entity.Property(t => t.Amount).HasPrecision(18, 2);
+            entity.Property(t => t.BeforeBalance).HasPrecision(18, 2);
+            entity.Property(t => t.AfterBalance).HasPrecision(18, 2);
             entity.Property(t => t.Description).HasMaxLength(500);
 
             entity.HasOne(t => t.Category)
