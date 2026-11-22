@@ -21,6 +21,67 @@ public class TransactionRouteHandlerTests
     }
 
     [TestMethod]
+    public async Task GetAccountTransactionsAndBalance_ShouldReturnOk_WhenSuccessful()
+    {
+        // Arrange
+        var responseDto = new AccountTransactionsResponseDto(1, "Checking", "Bank", 1000m, 1000m, new List<TransactionSummaryDto>());
+        _mockTransactionService.Setup(s => s.GetAccountTransactionsAndBalanceAsync(1, "2026-11-01", "2026-11-15"))
+            .ReturnsAsync(responseDto);
+
+        // Act
+        var result = await TransactionRouteHandlers.GetAccountTransactionsAndBalance(1, "2026-11-01", "2026-11-15", _mockTransactionService.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var httpContext = new DefaultHttpContext();
+        var services = new ServiceCollection().AddLogging().BuildServiceProvider();
+        httpContext.RequestServices = services;
+
+        await result.ExecuteAsync(httpContext);
+        Assert.AreEqual(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task GetAccountTransactionsAndBalance_ShouldReturnNotFound_WhenAccountMissing()
+    {
+        // Arrange
+        _mockTransactionService.Setup(s => s.GetAccountTransactionsAndBalanceAsync(99, "2026-11-01", null))
+            .ReturnsAsync((AccountTransactionsResponseDto?)null);
+
+        // Act
+        var result = await TransactionRouteHandlers.GetAccountTransactionsAndBalance(99, "2026-11-01", null, _mockTransactionService.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var httpContext = new DefaultHttpContext();
+        var services = new ServiceCollection().AddLogging().BuildServiceProvider();
+        httpContext.RequestServices = services;
+
+        await result.ExecuteAsync(httpContext);
+        Assert.AreEqual(StatusCodes.Status404NotFound, httpContext.Response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task GetAccountTransactionsAndBalance_ShouldReturnBadRequest_WhenArgumentExceptionThrown()
+    {
+        // Arrange
+        _mockTransactionService.Setup(s => s.GetAccountTransactionsAndBalanceAsync(1, null, null))
+            .ThrowsAsync(new ArgumentException("startDate is required."));
+
+        // Act
+        var result = await TransactionRouteHandlers.GetAccountTransactionsAndBalance(1, null, null, _mockTransactionService.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var httpContext = new DefaultHttpContext();
+        var services = new ServiceCollection().AddLogging().BuildServiceProvider();
+        httpContext.RequestServices = services;
+
+        await result.ExecuteAsync(httpContext);
+        Assert.AreEqual(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+    }
+
+    [TestMethod]
     public async Task CreateTransaction_ShouldReturnCreated_WhenSuccessful()
     {
         // Arrange

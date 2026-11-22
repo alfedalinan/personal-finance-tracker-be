@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using PersonalFinanceTracker.Data;
 using PersonalFinanceTracker.Entities;
@@ -160,7 +161,65 @@ public class TransactionService : ITransactionService
         throw new InvalidOperationException("Direct deletions on existing ledger transactions are disabled to preserve historical audit integrity. Please post a compensating/reversing transaction instead.");
     }
 
-    public async Task<AccountTransactionsResponseDto?> GetAccountTransactionsAndBalanceAsync(int accountId)
+    private (DateTime Start, DateTime End) ParseAndValidateDateRange(string? startDateStr, string? endDateStr)
+    {
+        if (string.IsNullOrWhiteSpace(startDateStr))
+        {
+            throw new ArgumentException("startDate is required.");
+        }
+
+        DateTime startDate;
+        if (DateTime.TryParseExact(startDateStr.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateOnlyStart))
+        {
+            startDate = new DateTime(dateOnlyStart.Year, dateOnlyStart.Month, dateOnlyStart.Day, 0, 0, 0, 0, DateTimeKind.Utc);
+        }
+        else if (DateTime.TryParse(startDateStr, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var parsedStart))
+        {
+            startDate = parsedStart.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(parsedStart, DateTimeKind.Utc)
+                : parsedStart.ToUniversalTime();
+        }
+        else
+        {
+            throw new ArgumentException("Invalid startDate format.");
+        }
+
+        DateTime endDate;
+        if (string.IsNullOrWhiteSpace(endDateStr))
+        {
+            var nowUtc = DateTime.UtcNow;
+            endDate = new DateTime(nowUtc.Year, nowUtc.Month, nowUtc.Day, 23, 59, 59, 999, DateTimeKind.Utc);
+        }
+        else if (DateTime.TryParseExact(endDateStr.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateOnlyEnd))
+        {
+            endDate = new DateTime(dateOnlyEnd.Year, dateOnlyEnd.Month, dateOnlyEnd.Day, 23, 59, 59, 999, DateTimeKind.Utc);
+        }
+        else if (DateTime.TryParse(endDateStr, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var parsedEnd))
+        {
+            endDate = parsedEnd.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(parsedEnd, DateTimeKind.Utc)
+                : parsedEnd.ToUniversalTime();
+        }
+        else
+        {
+            throw new ArgumentException("Invalid endDate format.");
+        }
+
+        var utcNow = DateTime.UtcNow;
+        if (endDate > utcNow)
+        {
+            endDate = utcNow;
+        }
+
+        if (startDate > endDate)
+        {
+            throw new ArgumentException("startDate cannot be later than endDate.");
+        }
+
+        return (startDate, endDate);
+    }
+
+    public async Task<AccountTransactionsResponseDto?> GetAccountTransactionsAndBalanceAsync(int accountId, string? startDate, string? endDate)
     {
         var account = await _accountRepository.GetAccountByIdAsync(accountId);
         if (account == null)
@@ -168,7 +227,9 @@ public class TransactionService : ITransactionService
             return null;
         }
 
-        var transactions = await _transactionRepository.GetTransactionsByAccountIdAsync(accountId);
+        var (parsedStart, parsedEnd) = ParseAndValidateDateRange(startDate, endDate);
+
+        var transactions = await _transactionRepository.GetTransactionsByAccountIdAsync(accountId, parsedStart, parsedEnd);
         var remainingBalance = account.CurrentBalance;
 
         var transactionDtos = transactions.Select(t => new TransactionSummaryDto(

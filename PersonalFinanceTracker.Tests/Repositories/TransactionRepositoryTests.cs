@@ -181,7 +181,7 @@ public class TransactionRepositoryTests
         await context.SaveChangesAsync();
 
         var repo = new TransactionRepository(context);
-        var result = (await repo.GetTransactionsByAccountIdAsync(1)).ToList();
+        var result = (await repo.GetTransactionsByAccountIdAsync(1, DateTime.UtcNow.AddDays(-10), DateTime.UtcNow.AddDays(10))).ToList();
 
         Assert.AreEqual(2, result.Count);
         Assert.AreEqual("New", result[0].Description); // Ordered descending by date

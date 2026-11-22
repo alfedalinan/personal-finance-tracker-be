@@ -6,14 +6,21 @@ namespace PersonalFinanceTracker.RouteHandlers;
 
 public static class TransactionRouteHandlers
 {
-    public static async Task<IResult> GetAccountTransactionsAndBalance(int accountId, ITransactionService transactionService)
+    public static async Task<IResult> GetAccountTransactionsAndBalance(int accountId, string? startDate, string? endDate, ITransactionService transactionService)
     {
-        var result = await transactionService.GetAccountTransactionsAndBalanceAsync(accountId);
-        if (result == null)
+        try
         {
-            return Results.NotFound(new { message = $"Account with ID {accountId} not found." });
+            var result = await transactionService.GetAccountTransactionsAndBalanceAsync(accountId, startDate, endDate);
+            if (result == null)
+            {
+                return Results.NotFound(new { message = $"Account with ID {accountId} not found." });
+            }
+            return Results.Ok(result);
         }
-        return Results.Ok(result);
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
     }
 
     public static async Task<IResult> CreateTransaction(CreateTransactionRequestDto request, ITransactionService transactionService)

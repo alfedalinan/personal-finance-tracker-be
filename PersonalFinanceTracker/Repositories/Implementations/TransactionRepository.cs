@@ -30,10 +30,10 @@ public class TransactionRepository : ITransactionRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Transaction>> GetTransactionsByAccountIdAsync(int accountId)
+    public async Task<IEnumerable<Transaction>> GetTransactionsByAccountIdAsync(int accountId, DateTime startDate, DateTime endDate)
     {
         return await _context.Transactions
-            .Where(t => t.AccountId == accountId)
+            .Where(t => t.AccountId == accountId && t.DateOfTransaction >= startDate && t.DateOfTransaction <= endDate)
             .Include(t => t.Category)
             .Include(t => t.Account)
             .OrderByDescending(t => t.DateOfTransaction)

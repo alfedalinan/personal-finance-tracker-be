@@ -149,11 +149,41 @@ public class TransactionServiceTests
 
         await service.CreateTransactionAsync(new CreateTransactionRequestDto(account.Id, category.Id, "Birthday", 200m));
 
-        var result = await service.GetAccountTransactionsAndBalanceAsync(account.Id);
+        var result = await service.GetAccountTransactionsAndBalanceAsync(account.Id, "2026-01-01", null);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(2200.00m, result.CurrentBalance);
         Assert.AreEqual(2200.00m, result.RemainingBalance);
+    }
+
+    [TestMethod]
+    public async Task GetAccountTransactionsAndBalanceAsync_ThrowsArgumentException_WhenStartDateMissing()
+    {
+        using var context = GetInMemoryDbContext();
+        var accountRepo = new AccountRepository(context);
+        var categoryRepo = new CategoryRepository(context);
+        var transactionRepo = new TransactionRepository(context);
+        var service = new TransactionService(transactionRepo, accountRepo, categoryRepo, context);
+
+        var account = await accountRepo.CreateAccountAsync(new Account { Name = "Savings", Type = "Bank", CurrentBalance = 2000m });
+
+        await Assert.ThrowsExceptionAsync<ArgumentException>(() =>
+            service.GetAccountTransactionsAndBalanceAsync(account.Id, null, null));
+    }
+
+    [TestMethod]
+    public async Task GetAccountTransactionsAndBalanceAsync_ThrowsArgumentException_WhenStartDateAfterEndDate()
+    {
+        using var context = GetInMemoryDbContext();
+        var accountRepo = new AccountRepository(context);
+        var categoryRepo = new CategoryRepository(context);
+        var transactionRepo = new TransactionRepository(context);
+        var service = new TransactionService(transactionRepo, accountRepo, categoryRepo, context);
+
+        var account = await accountRepo.CreateAccountAsync(new Account { Name = "Savings", Type = "Bank", CurrentBalance = 2000m });
+
+        await Assert.ThrowsExceptionAsync<ArgumentException>(() =>
+            service.GetAccountTransactionsAndBalanceAsync(account.Id, "2026-11-20", "2026-11-10"));
     }
 
     [TestMethod]
