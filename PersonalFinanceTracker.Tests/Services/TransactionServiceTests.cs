@@ -33,16 +33,20 @@ public class TransactionServiceTests
         // Arrange
         var request = new CreateTransactionRequestDto(1, 1, "Water Bill Payment", -185.00m);
         _mockAccountRepo.Setup(r => r.GetAccountByIdAsync(1)).ReturnsAsync(new Account { Id = 1 });
-        _mockCategoryRepo.Setup(r => r.GetCategoryByIdAsync(1)).ReturnsAsync(new Category { Id = 1 });
+        _mockCategoryRepo.Setup(r => r.GetCategoryByIdAsync(1)).ReturnsAsync(new Category { Id = 1, Name = "Utilities", Type = CategoryType.Expense });
         _mockTransactionRepo.Setup(r => r.CreateTransactionAsync(It.IsAny<Transaction>()))
-            .ReturnsAsync(new Transaction { Id = 1, Amount = -185.00m });
+            .ReturnsAsync(new Transaction { Id = 1, Amount = -185.00m, Description = "Water Bill Payment", DateOfTransaction = new DateTime(2026, 1, 1) });
 
         // Act
         var result = await _service.CreateTransactionAsync(request);
 
         // Assert
         Assert.IsNotNull(result);
+        Assert.AreEqual(1, result.Id);
         Assert.AreEqual(-185.00m, result.Amount);
+        Assert.AreEqual("Water Bill Payment", result.Description);
+        Assert.AreEqual("Utilities", result.CategoryName);
+        Assert.AreEqual("Expense", result.CategoryType);
     }
 
     [TestMethod]

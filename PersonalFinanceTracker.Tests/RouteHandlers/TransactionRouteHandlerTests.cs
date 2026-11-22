@@ -25,8 +25,8 @@ public class TransactionRouteHandlerTests
     {
         // Arrange
         var request = new CreateTransactionRequestDto(1, 1, "Salary", 5000m);
-        var created = new Transaction { Id = 1, AccountId = 1, CategoryId = 1, Amount = 5000m, Description = "Salary" };
-        _mockTransactionService.Setup(s => s.CreateTransactionAsync(request)).ReturnsAsync(created);
+        var createdDto = new TransactionSummaryDto(1, DateTime.UtcNow, 5000m, "Salary", "Income", "Income");
+        _mockTransactionService.Setup(s => s.CreateTransactionAsync(request)).ReturnsAsync(createdDto);
 
         // Act
         var result = await TransactionRouteHandlers.CreateTransaction(request, _mockTransactionService.Object);
@@ -46,8 +46,8 @@ public class TransactionRouteHandlerTests
     {
         // Arrange
         var request = new CreateTransactionRequestDto(1, 1, "Groceries", -150.00m);
-        var created = new Transaction { Id = 1, AccountId = 1, CategoryId = 1, Amount = -150.00m, Description = "Groceries" };
-        _mockTransactionService.Setup(s => s.CreateTransactionAsync(request)).ReturnsAsync(created);
+        var createdDto = new TransactionSummaryDto(1, DateTime.UtcNow, -150.00m, "Groceries", "Food", "Expense");
+        _mockTransactionService.Setup(s => s.CreateTransactionAsync(request)).ReturnsAsync(createdDto);
 
         // Act
         var result = await TransactionRouteHandlers.CreateTransaction(request, _mockTransactionService.Object);

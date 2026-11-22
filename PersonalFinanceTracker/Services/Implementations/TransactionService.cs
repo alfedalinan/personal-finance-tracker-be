@@ -21,7 +21,7 @@ public class TransactionService : ITransactionService
         _categoryRepository = categoryRepository;
     }
 
-    public async Task<Transaction> CreateTransactionAsync(CreateTransactionRequestDto request)
+    public async Task<TransactionSummaryDto> CreateTransactionAsync(CreateTransactionRequestDto request)
     {
         var account = await _accountRepository.GetAccountByIdAsync(request.AccountId);
         if (account == null)
@@ -44,7 +44,16 @@ public class TransactionService : ITransactionService
             DateOfTransaction = request.DateOfTransaction ?? DateTime.UtcNow
         };
 
-        return await _transactionRepository.CreateTransactionAsync(transaction);
+        var createdTransaction = await _transactionRepository.CreateTransactionAsync(transaction);
+
+        return new TransactionSummaryDto(
+            createdTransaction.Id,
+            createdTransaction.DateOfTransaction,
+            createdTransaction.Amount,
+            createdTransaction.Description,
+            category.Name,
+            category.Type.ToString()
+        );
     }
 
     public async Task<AccountTransactionsResponseDto?> GetAccountTransactionsAndBalanceAsync(int accountId)
