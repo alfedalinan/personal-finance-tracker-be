@@ -22,6 +22,8 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 
 // Register Services
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 var app = builder.Build();
 
@@ -67,6 +69,21 @@ app.MapGet("/weatherforecast", () =>
 
 app.MapGet("/api/accounts/{accountId}/transactions", TransactionRouteHandlers.GetAccountTransactionsAndBalance)
 .WithName("GetAccountTransactionsAndBalance");
+
+app.MapGet("/api/accounts", AccountRouteHandlers.GetAllAccounts)
+.WithName("GetAllAccounts");
+
+app.MapGet("/api/accounts/{id}", AccountRouteHandlers.GetAccountById)
+.WithName("GetAccountById");
+
+app.MapPost("/api/accounts", AccountRouteHandlers.CreateAccount)
+.WithName("CreateAccount");
+
+app.MapGet("/api/categories", CategoryRouteHandlers.GetAllCategories)
+.WithName("GetAllCategories");
+
+app.MapPost("/api/categories", CategoryRouteHandlers.CreateCategory)
+.WithName("CreateCategory");
 
 app.MapPost("/api/transactions", TransactionRouteHandlers.CreateTransaction)
 .WithName("CreateTransaction");
