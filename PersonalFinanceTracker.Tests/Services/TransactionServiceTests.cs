@@ -155,4 +155,47 @@ public class TransactionServiceTests
         Assert.AreEqual(2200.00m, result.CurrentBalance);
         Assert.AreEqual(2200.00m, result.RemainingBalance);
     }
+
+    [TestMethod]
+    public async Task CreateTransactionAsync_OmittedDate_AssignsUtcNowInUtc()
+    {
+        using var context = GetInMemoryDbContext();
+        var accountRepo = new AccountRepository(context);
+        var categoryRepo = new CategoryRepository(context);
+        var transactionRepo = new TransactionRepository(context);
+        var service = new TransactionService(transactionRepo, accountRepo, categoryRepo, context);
+
+        var account = await accountRepo.CreateAccountAsync(new Account { Name = "Checking", Type = "Bank", CurrentBalance = 1000m });
+        var category = await categoryRepo.CreateCategoryAsync(new Category { Name = "Salary", Type = CategoryType.Income });
+
+        var beforeCall = DateTime.UtcNow;
+        var request = new CreateTransactionRequestDto(account.Id, category.Id, "Pay", 500m);
+        var result = await service.CreateTransactionAsync(request);
+        var afterCall = DateTime.UtcNow;
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(DateTimeKind.Utc, result.DateOfTransaction.Kind);
+        Assert.IsTrue(result.DateOfTransaction >= beforeCall.AddSeconds(-1) && result.DateOfTransaction <= afterCall.AddSeconds(1));
+    }
+
+    [TestMethod]
+    public async Task CreateTransactionAsync_ExplicitDate_PreservesDateInUtc()
+    {
+        using var context = GetInMemoryDbContext();
+        var accountRepo = new AccountRepository(context);
+        var categoryRepo = new CategoryRepository(context);
+        var transactionRepo = new TransactionRepository(context);
+        var service = new TransactionService(transactionRepo, accountRepo, categoryRepo, context);
+
+        var account = await accountRepo.CreateAccountAsync(new Account { Name = "Checking", Type = "Bank", CurrentBalance = 1000m });
+        var category = await categoryRepo.CreateCategoryAsync(new Category { Name = "Salary", Type = CategoryType.Income });
+
+        var explicitDate = new DateTime(2025, 6, 15, 12, 0, 0, DateTimeKind.Unspecified);
+        var request = new CreateTransactionRequestDto(account.Id, category.Id, "Pay", 500m, explicitDate);
+        var result = await service.CreateTransactionAsync(request);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(DateTimeKind.Utc, result.DateOfTransaction.Kind);
+        Assert.AreEqual(new DateTime(2025, 6, 15, 12, 0, 0, DateTimeKind.Utc), result.DateOfTransaction);
+    }
 }

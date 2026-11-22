@@ -89,6 +89,16 @@ public class TransactionService : ITransactionService
 
             await _accountRepository.UpdateAccountAsync(account);
 
+            var transactionDate = request.DateOfTransaction ?? DateTime.UtcNow;
+            if (transactionDate.Kind == DateTimeKind.Unspecified)
+            {
+                transactionDate = DateTime.SpecifyKind(transactionDate, DateTimeKind.Utc);
+            }
+            else
+            {
+                transactionDate = transactionDate.ToUniversalTime();
+            }
+
             var transaction = new Transaction
             {
                 AccountId = request.AccountId,
@@ -97,7 +107,7 @@ public class TransactionService : ITransactionService
                 Amount = request.Amount,
                 BeforeBalance = beforeBalance,
                 AfterBalance = afterBalance,
-                DateOfTransaction = request.DateOfTransaction ?? DateTime.UtcNow
+                DateOfTransaction = transactionDate
             };
 
             var createdTransaction = await _transactionRepository.CreateTransactionAsync(transaction);
