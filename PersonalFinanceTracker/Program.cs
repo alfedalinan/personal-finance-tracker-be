@@ -94,6 +94,12 @@ app.MapGet("/api/accounts", AccountRouteHandlers.GetAllAccounts)
 .WithSummary("Get all accounts")
 .WithDescription("Retrieves a list of all bank accounts.");
 
+app.MapGet("/api/accounts/summary", AccountRouteHandlers.GetAccountsWithRecentTransactions)
+.WithName("GetAccountsWithRecentTransactions")
+.Produces<IEnumerable<AccountWithRecentTransactionsResponseDto>>(StatusCodes.Status200OK)
+.WithSummary("Get all accounts with recent transactions")
+.WithDescription("Retrieves all accounts along with their top 5 most recent transactions ordered by date descending.");
+
 app.MapGet("/api/accounts/{id}", AccountRouteHandlers.GetAccountById)
 .WithName("GetAccountById")
 .Produces<AccountResponseDto>(StatusCodes.Status200OK)

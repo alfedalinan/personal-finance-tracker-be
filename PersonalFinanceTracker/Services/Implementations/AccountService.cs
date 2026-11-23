@@ -26,6 +26,28 @@ public class AccountService : IAccountService
         ));
     }
 
+    public async Task<IEnumerable<AccountWithRecentTransactionsResponseDto>> GetAllAccountsWithRecentTransactionsAsync()
+    {
+        var accounts = await _accountRepository.GetAllAccountsWithRecentTransactionsAsync();
+        return accounts.Select(a => new AccountWithRecentTransactionsResponseDto(
+            a.Id,
+            a.Name,
+            a.Type,
+            a.CurrentBalance,
+            a.Slug,
+            a.Transactions.Select(t => new TransactionSummaryDto(
+                t.Id,
+                t.DateOfTransaction,
+                t.Amount,
+                t.BeforeBalance,
+                t.AfterBalance,
+                t.Description,
+                t.Category?.Name ?? string.Empty,
+                t.Category?.Type.ToString() ?? string.Empty
+            ))
+        ));
+    }
+
     public async Task<AccountResponseDto?> GetAccountByIdAsync(int id)
     {
         var account = await _accountRepository.GetAccountByIdAsync(id);

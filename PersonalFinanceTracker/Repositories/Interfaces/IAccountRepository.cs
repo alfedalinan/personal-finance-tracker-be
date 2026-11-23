@@ -8,6 +8,7 @@ public interface IAccountRepository
     Task<Account?> GetAccountBySlugAsync(string slug);
     Task<Account?> GetAccountByTypeAsync(string type);
     Task<IEnumerable<Account>> GetAllAccountsAsync();
+    Task<IEnumerable<Account>> GetAllAccountsWithRecentTransactionsAsync();
     Task<Account> CreateAccountAsync(Account account);
     Task UpdateAccountAsync(Account account);
     Task DeleteAccountAsync(int id);

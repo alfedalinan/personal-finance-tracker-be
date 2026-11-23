@@ -42,6 +42,24 @@ public class AccountRepository : IAccountRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Account>> GetAllAccountsWithRecentTransactionsAsync()
+    {
+        var accounts = await _context.Accounts
+            .Include(a => a.Transactions)
+                .ThenInclude(t => t.Category)
+            .ToListAsync();
+
+        foreach (var account in accounts)
+        {
+            account.Transactions = account.Transactions
+                .OrderByDescending(t => t.DateOfTransaction)
+                .Take(5)
+                .ToList();
+        }
+
+        return accounts;
+    }
+
     public async Task<Account> CreateAccountAsync(Account account)
     {
         _context.Accounts.Add(account);

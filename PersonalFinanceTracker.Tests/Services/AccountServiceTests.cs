@@ -135,4 +135,48 @@ public class AccountServiceTests
         Assert.AreEqual("custom-slug", result.Slug);
         Assert.AreEqual(1500m, result.CurrentBalance);
     }
+
+    [TestMethod]
+    public async Task GetAllAccountsWithRecentTransactionsAsync_ShouldReturnMappedDtos()
+    {
+        // Arrange
+        var accounts = new List<Account>
+        {
+            new Account
+            {
+                Id = 1,
+                Name = "Checking",
+                Type = "Bank",
+                CurrentBalance = 500m,
+                Slug = "checking",
+                Transactions = new List<Transaction>
+                {
+                    new Transaction
+                    {
+                        Id = 100,
+                        DateOfTransaction = DateTime.UtcNow,
+                        Amount = 50m,
+                        BeforeBalance = 450m,
+                        AfterBalance = 500m,
+                        Description = "Salary",
+                        Category = new Category { Name = "Income", Type = CategoryType.Income }
+                    }
+                }
+            }
+        };
+        _mockAccountRepo.Setup(r => r.GetAllAccountsWithRecentTransactionsAsync()).ReturnsAsync(accounts);
+
+        // Act
+        var result = await _service.GetAllAccountsWithRecentTransactionsAsync();
+
+        // Assert
+        Assert.IsNotNull(result);
+        var list = result.ToList();
+        Assert.AreEqual(1, list.Count);
+        Assert.AreEqual("Checking", list[0].Name);
+        var txs = list[0].Transactions.ToList();
+        Assert.AreEqual(1, txs.Count);
+        Assert.AreEqual("Salary", txs[0].Description);
+        Assert.AreEqual("Income", txs[0].CategoryName);
+    }
 }

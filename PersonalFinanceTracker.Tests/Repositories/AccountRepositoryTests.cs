@@ -144,4 +144,42 @@ public class AccountRepositoryTests
         var deleted = await context.Accounts.FindAsync(account.Id);
         Assert.IsNull(deleted);
     }
+
+    [TestMethod]
+    public async Task GetAllAccountsWithRecentTransactionsAsync_ReturnsTop5OrderedTransactions()
+    {
+        using var context = GetInMemoryDbContext();
+        var account = new Account { Name = "Checking", Type = "Bank", CurrentBalance = 1000m };
+        context.Accounts.Add(account);
+        await context.SaveChangesAsync();
+
+        var category = new Category { Name = "Food", Type = CategoryType.Expense };
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+
+        for (int i = 1; i <= 7; i++)
+        {
+            context.Transactions.Add(new Transaction
+            {
+                AccountId = account.Id,
+                CategoryId = category.Id,
+                Amount = 10m * i,
+                BeforeBalance = 1000m,
+                AfterBalance = 990m,
+                Description = $"Tx {i}",
+                DateOfTransaction = DateTime.UtcNow.AddDays(-i)
+            });
+        }
+        await context.SaveChangesAsync();
+
+        var repo = new AccountRepository(context);
+        var result = (await repo.GetAllAccountsWithRecentTransactionsAsync()).ToList();
+
+        Assert.AreEqual(1, result.Count);
+        var txs = result[0].Transactions.ToList();
+        Assert.AreEqual(5, txs.Count);
+        // Should be ordered descending by date (most recent first, i.e., -1 day, -2 days, -3 days, -4 days, -5 days)
+        Assert.AreEqual("Tx 1", txs[0].Description);
+        Assert.AreEqual("Tx 5", txs[4].Description);
+    }
 }

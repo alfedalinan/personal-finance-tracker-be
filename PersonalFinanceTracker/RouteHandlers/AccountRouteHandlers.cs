@@ -12,6 +12,12 @@ public static class AccountRouteHandlers
         return Results.Ok(accounts);
     }
 
+    public static async Task<IResult> GetAccountsWithRecentTransactions(IAccountService accountService)
+    {
+        var accounts = await accountService.GetAllAccountsWithRecentTransactionsAsync();
+        return Results.Ok(accounts);
+    }
+
     public static async Task<IResult> GetAccountById(int id, IAccountService accountService)
     {
         var account = await accountService.GetAccountByIdAsync(id);

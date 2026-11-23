@@ -171,4 +171,26 @@ public class AccountRouteHandlerTests
         await result.ExecuteAsync(httpContext);
         Assert.AreEqual(StatusCodes.Status201Created, httpContext.Response.StatusCode);
     }
+
+    [TestMethod]
+    public async Task GetAccountsWithRecentTransactions_ShouldReturnOkWithAccounts()
+    {
+        // Arrange
+        var accounts = new List<AccountWithRecentTransactionsResponseDto>
+        {
+            new AccountWithRecentTransactionsResponseDto(1, "Checking", "Bank", 500m, "checking", new List<TransactionSummaryDto>())
+        };
+        _mockAccountService.Setup(s => s.GetAllAccountsWithRecentTransactionsAsync()).ReturnsAsync(accounts);
+
+        // Act
+        var result = await AccountRouteHandlers.GetAccountsWithRecentTransactions(_mockAccountService.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+        await result.ExecuteAsync(httpContext);
+        Assert.AreEqual(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
 }
