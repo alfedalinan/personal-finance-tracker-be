@@ -89,6 +89,20 @@ app.MapGet("/api/accounts/{id}", AccountRouteHandlers.GetAccountById)
 .WithSummary("Get account by ID")
 .WithDescription("Retrieves a specific bank account by its unique identifier.");
 
+app.MapGet("/api/accounts/slug/{slug}", AccountRouteHandlers.GetAccountBySlug)
+.WithName("GetAccountBySlug")
+.Produces<AccountResponseDto>(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status404NotFound)
+.WithSummary("Get account by slug")
+.WithDescription("Retrieves a specific bank account by its universal slug.");
+
+app.MapGet("/api/accounts/by-type/{type}", AccountRouteHandlers.GetAccountByType)
+.WithName("GetAccountByType")
+.Produces<AccountResponseDto>(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status404NotFound)
+.WithSummary("Get account by type or slug")
+.WithDescription("Retrieves a specific bank account by its account type or slug.");
+
 app.MapPost("/api/accounts", AccountRouteHandlers.CreateAccount)
 .WithName("CreateAccount")
 .Produces<AccountResponseDto>(StatusCodes.Status201Created)

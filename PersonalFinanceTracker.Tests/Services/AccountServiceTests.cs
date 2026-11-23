@@ -73,10 +73,54 @@ public class AccountServiceTests
     }
 
     [TestMethod]
+    public async Task GetAccountBySlugAsync_ShouldReturnAccount_WhenAccountExists()
+    {
+        // Arrange
+        var account = new Account { Id = 1, Name = "Primary Savings", Type = "Savings", Slug = "primary-savings", CurrentBalance = 500m };
+        _mockAccountRepo.Setup(r => r.GetAccountBySlugAsync("primary-savings")).ReturnsAsync(account);
+
+        // Act
+        var result = await _service.GetAccountBySlugAsync("primary-savings");
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual("primary-savings", result.Slug);
+        Assert.AreEqual("Primary Savings", result.Name);
+    }
+
+    [TestMethod]
+    public async Task GetAccountBySlugAsync_ShouldReturnNull_WhenAccountDoesNotExist()
+    {
+        // Arrange
+        _mockAccountRepo.Setup(r => r.GetAccountBySlugAsync("missing")).ReturnsAsync((Account?)null);
+
+        // Act
+        var result = await _service.GetAccountBySlugAsync("missing");
+
+        // Assert
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public async Task GetAccountByTypeAsync_ShouldReturnAccount_WhenAccountExists()
+    {
+        // Arrange
+        var account = new Account { Id = 1, Name = "Primary Savings", Type = "Savings", Slug = "primary-savings", CurrentBalance = 500m };
+        _mockAccountRepo.Setup(r => r.GetAccountByTypeAsync("savings")).ReturnsAsync(account);
+
+        // Act
+        var result = await _service.GetAccountByTypeAsync("savings");
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual("Savings", result.Type);
+    }
+
+    [TestMethod]
     public async Task CreateAccountAsync_ShouldCreateAndReturnAccount()
     {
         // Arrange
-        var request = new CreateAccountRequestDto("Investment", "Brokerage", 1500m);
+        var request = new CreateAccountRequestDto("Investment", "Brokerage", 1500m, "custom-slug");
         _mockAccountRepo.Setup(r => r.CreateAccountAsync(It.IsAny<Account>()))
             .ReturnsAsync((Account a) => { a.Id = 10; return a; });
 
@@ -88,6 +132,7 @@ public class AccountServiceTests
         Assert.AreEqual(10, result.Id);
         Assert.AreEqual("Investment", result.Name);
         Assert.AreEqual("Brokerage", result.Type);
+        Assert.AreEqual("custom-slug", result.Slug);
         Assert.AreEqual(1500m, result.CurrentBalance);
     }
 }

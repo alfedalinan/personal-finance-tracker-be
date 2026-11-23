@@ -21,7 +21,8 @@ public class AccountService : IAccountService
             a.Id,
             a.Name,
             a.Type,
-            a.CurrentBalance
+            a.CurrentBalance,
+            a.Slug
         ));
     }
 
@@ -37,16 +38,56 @@ public class AccountService : IAccountService
             account.Id,
             account.Name,
             account.Type,
-            account.CurrentBalance
+            account.CurrentBalance,
+            account.Slug
+        );
+    }
+
+    public async Task<AccountResponseDto?> GetAccountBySlugAsync(string slug)
+    {
+        var account = await _accountRepository.GetAccountBySlugAsync(slug);
+        if (account == null)
+        {
+            return null;
+        }
+
+        return new AccountResponseDto(
+            account.Id,
+            account.Name,
+            account.Type,
+            account.CurrentBalance,
+            account.Slug
+        );
+    }
+
+    public async Task<AccountResponseDto?> GetAccountByTypeAsync(string type)
+    {
+        var account = await _accountRepository.GetAccountByTypeAsync(type);
+        if (account == null)
+        {
+            return null;
+        }
+
+        return new AccountResponseDto(
+            account.Id,
+            account.Name,
+            account.Type,
+            account.CurrentBalance,
+            account.Slug
         );
     }
 
     public async Task<AccountResponseDto> CreateAccountAsync(CreateAccountRequestDto request)
     {
+        var slug = !string.IsNullOrWhiteSpace(request.Slug)
+            ? request.Slug
+            : GenerateSlug(request.Name);
+
         var account = new Account
         {
             Name = request.Name,
             Type = request.Type,
+            Slug = slug,
             CurrentBalance = request.CurrentBalance
         };
 
@@ -56,7 +97,17 @@ public class AccountService : IAccountService
             createdAccount.Id,
             createdAccount.Name,
             createdAccount.Type,
-            createdAccount.CurrentBalance
+            createdAccount.CurrentBalance,
+            createdAccount.Slug
         );
+    }
+
+    private static string GenerateSlug(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "account";
+        return name.ToLowerInvariant()
+            .Trim()
+            .Replace(" ", "-")
+            .Replace("_", "-");
     }
 }

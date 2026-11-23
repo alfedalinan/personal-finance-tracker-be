@@ -30,6 +30,8 @@ public class FinanceTrackerDbContext : DbContext
         {
             entity.HasKey(a => a.Id);
             entity.Property(a => a.Name).IsRequired().HasMaxLength(100);
+            entity.Property(a => a.Slug).IsRequired().HasMaxLength(100);
+            entity.HasIndex(a => a.Slug).IsUnique();
             entity.Property(a => a.Type).IsRequired().HasMaxLength(50);
             entity.Property(a => a.CurrentBalance).HasPrecision(18, 2);
         });

@@ -12,6 +12,10 @@ public class Account
     public string Name { get; set; } = string.Empty;
 
     [Required]
+    [MaxLength(100)]
+    public string Slug { get; set; } = string.Empty;
+
+    [Required]
     [MaxLength(50)]
     public string Type { get; set; } = string.Empty;
 

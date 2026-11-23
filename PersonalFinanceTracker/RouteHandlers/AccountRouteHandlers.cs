@@ -22,6 +22,26 @@ public static class AccountRouteHandlers
         return Results.Ok(account);
     }
 
+    public static async Task<IResult> GetAccountBySlug(string slug, IAccountService accountService)
+    {
+        var account = await accountService.GetAccountBySlugAsync(slug);
+        if (account == null)
+        {
+            return Results.NotFound(new { message = $"Account with slug '{slug}' not found." });
+        }
+        return Results.Ok(account);
+    }
+
+    public static async Task<IResult> GetAccountByType(string type, IAccountService accountService)
+    {
+        var account = await accountService.GetAccountByTypeAsync(type);
+        if (account == null)
+        {
+            return Results.NotFound(new { message = $"Account with type/slug '{type}' not found." });
+        }
+        return Results.Ok(account);
+    }
+
     public static async Task<IResult> CreateAccount(CreateAccountRequestDto request, IAccountService accountService)
     {
         var createdAccount = await accountService.CreateAccountAsync(request);

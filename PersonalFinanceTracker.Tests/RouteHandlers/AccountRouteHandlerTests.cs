@@ -25,7 +25,7 @@ public class AccountRouteHandlerTests
         // Arrange
         var accounts = new List<AccountResponseDto>
         {
-            new AccountResponseDto(1, "Checking", "Bank", 500m)
+            new AccountResponseDto(1, "Checking", "Bank", 500m, "checking")
         };
         _mockAccountService.Setup(s => s.GetAllAccountsAsync()).ReturnsAsync(accounts);
 
@@ -45,7 +45,7 @@ public class AccountRouteHandlerTests
     public async Task GetAccountById_ShouldReturnOk_WhenAccountExists()
     {
         // Arrange
-        var account = new AccountResponseDto(1, "Checking", "Bank", 500m);
+        var account = new AccountResponseDto(1, "Checking", "Bank", 500m, "checking");
         _mockAccountService.Setup(s => s.GetAccountByIdAsync(1)).ReturnsAsync(account);
 
         // Act
@@ -79,11 +79,85 @@ public class AccountRouteHandlerTests
     }
 
     [TestMethod]
+    public async Task GetAccountBySlug_ShouldReturnOk_WhenAccountExists()
+    {
+        // Arrange
+        var account = new AccountResponseDto(1, "Primary Savings", "Savings", 500m, "primary-savings");
+        _mockAccountService.Setup(s => s.GetAccountBySlugAsync("primary-savings")).ReturnsAsync(account);
+
+        // Act
+        var result = await AccountRouteHandlers.GetAccountBySlug("primary-savings", _mockAccountService.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+        await result.ExecuteAsync(httpContext);
+        Assert.AreEqual(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task GetAccountBySlug_ShouldReturnNotFound_WhenAccountDoesNotExist()
+    {
+        // Arrange
+        _mockAccountService.Setup(s => s.GetAccountBySlugAsync("missing")).ReturnsAsync((AccountResponseDto?)null);
+
+        // Act
+        var result = await AccountRouteHandlers.GetAccountBySlug("missing", _mockAccountService.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+        await result.ExecuteAsync(httpContext);
+        Assert.AreEqual(StatusCodes.Status404NotFound, httpContext.Response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task GetAccountByType_ShouldReturnOk_WhenAccountExists()
+    {
+        // Arrange
+        var account = new AccountResponseDto(1, "Primary Savings", "Savings", 500m, "primary-savings");
+        _mockAccountService.Setup(s => s.GetAccountByTypeAsync("savings")).ReturnsAsync(account);
+
+        // Act
+        var result = await AccountRouteHandlers.GetAccountByType("savings", _mockAccountService.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+        await result.ExecuteAsync(httpContext);
+        Assert.AreEqual(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task GetAccountByType_ShouldReturnNotFound_WhenAccountDoesNotExist()
+    {
+        // Arrange
+        _mockAccountService.Setup(s => s.GetAccountByTypeAsync("missing")).ReturnsAsync((AccountResponseDto?)null);
+
+        // Act
+        var result = await AccountRouteHandlers.GetAccountByType("missing", _mockAccountService.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+        await result.ExecuteAsync(httpContext);
+        Assert.AreEqual(StatusCodes.Status404NotFound, httpContext.Response.StatusCode);
+    }
+
+    [TestMethod]
     public async Task CreateAccount_ShouldReturnCreated()
     {
         // Arrange
         var request = new CreateAccountRequestDto("Savings", "Bank", 1000m);
-        var created = new AccountResponseDto(1, "Savings", "Bank", 1000m);
+        var created = new AccountResponseDto(1, "Savings", "Bank", 1000m, "savings");
         _mockAccountService.Setup(s => s.CreateAccountAsync(request)).ReturnsAsync(created);
 
         // Act

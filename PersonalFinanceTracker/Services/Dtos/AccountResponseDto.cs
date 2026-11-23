@@ -4,5 +4,6 @@ public record AccountResponseDto(
     int Id,
     string Name,
     string Type,
-    decimal CurrentBalance
+    decimal CurrentBalance,
+    string Slug
 );

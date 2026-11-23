@@ -21,6 +21,20 @@ public class AccountRepository : IAccountRepository
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
+    public async Task<Account?> GetAccountBySlugAsync(string slug)
+    {
+        return await _context.Accounts
+            .Include(a => a.Transactions)
+            .FirstOrDefaultAsync(a => a.Slug.ToLower() == slug.ToLower());
+    }
+
+    public async Task<Account?> GetAccountByTypeAsync(string type)
+    {
+        return await _context.Accounts
+            .Include(a => a.Transactions)
+            .FirstOrDefaultAsync(a => a.Type.ToLower() == type.ToLower() || a.Slug.ToLower() == type.ToLower());
+    }
+
     public async Task<IEnumerable<Account>> GetAllAccountsAsync()
     {
         return await _context.Accounts

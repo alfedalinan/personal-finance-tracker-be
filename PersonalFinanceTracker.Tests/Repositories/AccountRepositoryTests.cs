@@ -21,7 +21,7 @@ public class AccountRepositoryTests
     public async Task GetAccountByIdAsync_ReturnsAccount_WhenExists()
     {
         using var context = GetInMemoryDbContext();
-        var account = new Account { Name = "Checking", Type = "Bank", CurrentBalance = 1000m };
+        var account = new Account { Name = "Checking", Type = "Bank", Slug = "checking", CurrentBalance = 1000m };
         context.Accounts.Add(account);
         await context.SaveChangesAsync();
 
@@ -31,6 +31,47 @@ public class AccountRepositoryTests
         Assert.IsNotNull(result);
         Assert.AreEqual("Checking", result.Name);
         Assert.AreEqual(1000m, result.CurrentBalance);
+    }
+
+    [TestMethod]
+    public async Task GetAccountBySlugAsync_ReturnsAccount_WhenExists()
+    {
+        using var context = GetInMemoryDbContext();
+        var account = new Account { Name = "Savings", Type = "Bank", Slug = "primary-savings", CurrentBalance = 1000m };
+        context.Accounts.Add(account);
+        await context.SaveChangesAsync();
+
+        var repo = new AccountRepository(context);
+        var result = await repo.GetAccountBySlugAsync("PRIMARY-SAVINGS");
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("Savings", result.Name);
+        Assert.AreEqual("primary-savings", result.Slug);
+    }
+
+    [TestMethod]
+    public async Task GetAccountBySlugAsync_ReturnsNull_WhenNotExists()
+    {
+        using var context = GetInMemoryDbContext();
+        var repo = new AccountRepository(context);
+        var result = await repo.GetAccountBySlugAsync("non-existent");
+
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public async Task GetAccountByTypeAsync_ReturnsAccount_WhenExists()
+    {
+        using var context = GetInMemoryDbContext();
+        var account = new Account { Name = "Savings", Type = "Savings", Slug = "primary-savings", CurrentBalance = 1000m };
+        context.Accounts.Add(account);
+        await context.SaveChangesAsync();
+
+        var repo = new AccountRepository(context);
+        var result = await repo.GetAccountByTypeAsync("savings");
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("Savings", result.Type);
     }
 
     [TestMethod]

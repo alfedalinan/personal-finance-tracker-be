@@ -31,12 +31,14 @@ public static class DbInitializer
             {
                 Name = "Primary Savings",
                 Type = "Savings",
+                Slug = "primary-savings",
                 CurrentBalance = 50000.00m
             },
             new Account
             {
                 Name = "Main Credit Card",
                 Type = "Credit Card",
+                Slug = "main-credit-card",
                 CurrentBalance = 200000.00m
             }
         };
