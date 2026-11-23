@@ -12,6 +12,12 @@ public static class AccountRouteHandlers
         return Results.Ok(accounts);
     }
 
+    public static async Task<IResult> GetAccountDropdownList(IAccountService accountService)
+    {
+        var accounts = await accountService.GetAccountDropdownOptionsAsync();
+        return Results.Ok(accounts);
+    }
+
     public static async Task<IResult> GetAccountsWithRecentTransactions(IAccountService accountService)
     {
         var accounts = await accountService.GetAllAccountsWithRecentTransactionsAsync();

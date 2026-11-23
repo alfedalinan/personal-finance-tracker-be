@@ -193,4 +193,26 @@ public class AccountRouteHandlerTests
         await result.ExecuteAsync(httpContext);
         Assert.AreEqual(StatusCodes.Status200OK, httpContext.Response.StatusCode);
     }
+
+    [TestMethod]
+    public async Task GetAccountDropdownList_ShouldReturnOkWithAccounts()
+    {
+        // Arrange
+        var accounts = new List<AccountDropdownDto>
+        {
+            new AccountDropdownDto(1, "Checking")
+        };
+        _mockAccountService.Setup(s => s.GetAccountDropdownOptionsAsync()).ReturnsAsync(accounts);
+
+        // Act
+        var result = await AccountRouteHandlers.GetAccountDropdownList(_mockAccountService.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+        await result.ExecuteAsync(httpContext);
+        Assert.AreEqual(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
 }

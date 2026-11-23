@@ -94,6 +94,12 @@ app.MapGet("/api/accounts", AccountRouteHandlers.GetAllAccounts)
 .WithSummary("Get all accounts")
 .WithDescription("Retrieves a list of all bank accounts.");
 
+app.MapGet("/api/accounts/list", AccountRouteHandlers.GetAccountDropdownList)
+.WithName("GetAccountDropdownList")
+.Produces<IEnumerable<AccountDropdownDto>>(StatusCodes.Status200OK)
+.WithSummary("Get account dropdown options")
+.WithDescription("Retrieves lightweight account list containing only Id and Name.");
+
 app.MapGet("/api/accounts/summary", AccountRouteHandlers.GetAccountsWithRecentTransactions)
 .WithName("GetAccountsWithRecentTransactions")
 .Produces<IEnumerable<AccountWithRecentTransactionsResponseDto>>(StatusCodes.Status200OK)
@@ -133,6 +139,12 @@ app.MapGet("/api/categories", CategoryRouteHandlers.GetAllCategories)
 .Produces<IEnumerable<CategoryResponseDto>>(StatusCodes.Status200OK)
 .WithSummary("Get all categories")
 .WithDescription("Retrieves a list of all transaction categories.");
+
+app.MapGet("/api/categories/list", CategoryRouteHandlers.GetAllCategories)
+.WithName("GetCategoryDropdownList")
+.Produces<IEnumerable<CategoryResponseDto>>(StatusCodes.Status200OK)
+.WithSummary("Get category dropdown options / category list")
+.WithDescription("Retrieves a list of all available categories for dropdown selection.");
 
 app.MapPost("/api/categories", CategoryRouteHandlers.CreateCategory)
 .WithName("CreateCategory")

@@ -179,4 +179,28 @@ public class AccountServiceTests
         Assert.AreEqual("Salary", txs[0].Description);
         Assert.AreEqual("Income", txs[0].CategoryName);
     }
+
+    [TestMethod]
+    public async Task GetAccountDropdownOptionsAsync_ShouldReturnDropdownDtos()
+    {
+        // Arrange
+        var accounts = new List<Account>
+        {
+            new Account { Id = 1, Name = "Checking", Type = "Bank", CurrentBalance = 500m },
+            new Account { Id = 2, Name = "Savings", Type = "Bank", CurrentBalance = 2000m }
+        };
+        _mockAccountRepo.Setup(r => r.GetAllAccountsAsync()).ReturnsAsync(accounts);
+
+        // Act
+        var result = await _service.GetAccountDropdownOptionsAsync();
+
+        // Assert
+        Assert.IsNotNull(result);
+        var list = result.ToList();
+        Assert.AreEqual(2, list.Count);
+        Assert.AreEqual(1, list[0].Id);
+        Assert.AreEqual("Checking", list[0].Name);
+        Assert.AreEqual(2, list[1].Id);
+        Assert.AreEqual("Savings", list[1].Name);
+    }
 }

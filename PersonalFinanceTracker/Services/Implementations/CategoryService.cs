@@ -24,6 +24,13 @@ public class CategoryService : ICategoryService
         ));
     }
 
+    public Task<IEnumerable<CategoryTypeDropdownDto>> GetCategoryTypeDropdownOptionsAsync()
+    {
+        var types = Enum.GetValues<CategoryType>()
+            .Select(t => new CategoryTypeDropdownDto((int)t, t.ToString()));
+        return Task.FromResult(types);
+    }
+
     public async Task<CategoryResponseDto> CreateCategoryAsync(CreateCategoryRequestDto request)
     {
         var category = new Category

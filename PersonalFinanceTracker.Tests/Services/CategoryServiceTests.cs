@@ -59,4 +59,20 @@ public class CategoryServiceTests
         Assert.AreEqual("Groceries", result.Name);
         Assert.AreEqual("Expense", result.Type);
     }
+
+    [TestMethod]
+    public async Task GetCategoryTypeDropdownOptionsAsync_ShouldReturnTypes()
+    {
+        // Act
+        var result = await _service.GetCategoryTypeDropdownOptionsAsync();
+
+        // Assert
+        Assert.IsNotNull(result);
+        var list = result.ToList();
+        Assert.AreEqual(2, list.Count);
+        Assert.AreEqual(1, list[0].Id);
+        Assert.AreEqual("Income", list[0].Name);
+        Assert.AreEqual(2, list[1].Id);
+        Assert.AreEqual("Expense", list[1].Name);
+    }
 }

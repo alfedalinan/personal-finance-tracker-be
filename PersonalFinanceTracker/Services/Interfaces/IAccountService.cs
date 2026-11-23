@@ -5,6 +5,7 @@ namespace PersonalFinanceTracker.Services.Interfaces;
 public interface IAccountService
 {
     Task<IEnumerable<AccountResponseDto>> GetAllAccountsAsync();
+    Task<IEnumerable<AccountDropdownDto>> GetAccountDropdownOptionsAsync();
     Task<IEnumerable<AccountWithRecentTransactionsResponseDto>> GetAllAccountsWithRecentTransactionsAsync();
     Task<AccountResponseDto?> GetAccountByIdAsync(int id);
     Task<AccountResponseDto?> GetAccountBySlugAsync(string slug);

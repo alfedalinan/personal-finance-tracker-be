@@ -26,6 +26,15 @@ public class AccountService : IAccountService
         ));
     }
 
+    public async Task<IEnumerable<AccountDropdownDto>> GetAccountDropdownOptionsAsync()
+    {
+        var accounts = await _accountRepository.GetAllAccountsAsync();
+        return accounts.Select(a => new AccountDropdownDto(
+            a.Id,
+            a.Name
+        ));
+    }
+
     public async Task<IEnumerable<AccountWithRecentTransactionsResponseDto>> GetAllAccountsWithRecentTransactionsAsync()
     {
         var accounts = await _accountRepository.GetAllAccountsWithRecentTransactionsAsync();
