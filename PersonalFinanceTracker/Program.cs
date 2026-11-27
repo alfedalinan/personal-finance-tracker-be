@@ -25,6 +25,7 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ITenantContext, TenantContext>();
 
 builder.Services.AddCors(options =>
 {
@@ -55,6 +56,8 @@ using (var scope = app.Services.CreateScope())
 
 // Configure the HTTP request pipeline.
 app.UseCors();
+
+app.UseMiddleware<PersonalFinanceTracker.Middleware.TenantResolutionMiddleware>();
 
 app.MapOpenApi();
 

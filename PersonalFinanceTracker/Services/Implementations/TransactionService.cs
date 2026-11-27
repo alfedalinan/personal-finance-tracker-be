@@ -14,17 +14,20 @@ public class TransactionService : ITransactionService
     private readonly IAccountRepository _accountRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly FinanceTrackerDbContext _context;
+    private readonly ITenantContext _tenantContext;
 
     public TransactionService(
         ITransactionRepository transactionRepository,
         IAccountRepository accountRepository,
         ICategoryRepository categoryRepository,
-        FinanceTrackerDbContext context)
+        FinanceTrackerDbContext context,
+        ITenantContext? tenantContext = null)
     {
         _transactionRepository = transactionRepository;
         _accountRepository = accountRepository;
         _categoryRepository = categoryRepository;
         _context = context;
+        _tenantContext = tenantContext ?? new TenantContext { TenantId = "11111111-1111-1111-1111-111111111111" };
     }
 
     private async Task<Category> GetAndValidateCategoryAsync(int categoryId)
@@ -40,7 +43,7 @@ public class TransactionService : ITransactionService
     private async Task<Account> GetAndValidateAccountAsync(int accountId)
     {
         var account = await _accountRepository.GetAccountByIdAsync(accountId);
-        if (account == null)
+        if (account == null || (!string.IsNullOrEmpty(account.TenantId) && !string.Equals(account.TenantId, _tenantContext.TenantId, StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException($"Account with ID {accountId} not found.");
         }
@@ -222,7 +225,7 @@ public class TransactionService : ITransactionService
     public async Task<AccountTransactionsResponseDto?> GetAccountTransactionsAndBalanceAsync(int accountId, string? startDate, string? endDate)
     {
         var account = await _accountRepository.GetAccountByIdAsync(accountId);
-        if (account == null)
+        if (account == null || (!string.IsNullOrEmpty(account.TenantId) && !string.Equals(account.TenantId, _tenantContext.TenantId, StringComparison.OrdinalIgnoreCase)))
         {
             return null;
         }
