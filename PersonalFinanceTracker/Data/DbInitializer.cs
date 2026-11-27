@@ -32,6 +32,7 @@ public static class DbInitializer
                 Name = "Primary Savings",
                 Type = "Savings",
                 Slug = "primary-savings",
+                TenantId = "11111111-1111-1111-1111-111111111111",
                 CurrentBalance = 50000.00m
             },
             new Account
@@ -39,6 +40,7 @@ public static class DbInitializer
                 Name = "Main Credit Card",
                 Type = "Credit Card",
                 Slug = "main-credit-card",
+                TenantId = "11111111-1111-1111-1111-111111111111",
                 CurrentBalance = 200000.00m
             }
         };

@@ -19,6 +19,10 @@ public class Account
     [MaxLength(50)]
     public string Type { get; set; } = string.Empty;
 
+    [Required]
+    [MaxLength(36)]
+    public string TenantId { get; set; } = string.Empty;
+
     [Column(TypeName = "decimal(18,2)")] // also configured in DbContext Fluent API
     public decimal CurrentBalance { get; set; }
 

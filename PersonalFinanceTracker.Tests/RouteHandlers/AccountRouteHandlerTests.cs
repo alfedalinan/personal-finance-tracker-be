@@ -25,7 +25,7 @@ public class AccountRouteHandlerTests
         // Arrange
         var accounts = new List<AccountResponseDto>
         {
-            new AccountResponseDto(1, "Checking", "Bank", 500m, "checking")
+            new AccountResponseDto(1, "Checking", "Bank", 500m, "checking", "11111111-1111-1111-1111-111111111111")
         };
         _mockAccountService.Setup(s => s.GetAllAccountsAsync()).ReturnsAsync(accounts);
 
@@ -45,7 +45,7 @@ public class AccountRouteHandlerTests
     public async Task GetAccountById_ShouldReturnOk_WhenAccountExists()
     {
         // Arrange
-        var account = new AccountResponseDto(1, "Checking", "Bank", 500m, "checking");
+        var account = new AccountResponseDto(1, "Checking", "Bank", 500m, "checking", "11111111-1111-1111-1111-111111111111");
         _mockAccountService.Setup(s => s.GetAccountByIdAsync(1)).ReturnsAsync(account);
 
         // Act
@@ -82,7 +82,7 @@ public class AccountRouteHandlerTests
     public async Task GetAccountBySlug_ShouldReturnOk_WhenAccountExists()
     {
         // Arrange
-        var account = new AccountResponseDto(1, "Primary Savings", "Savings", 500m, "primary-savings");
+        var account = new AccountResponseDto(1, "Primary Savings", "Savings", 500m, "primary-savings", "11111111-1111-1111-1111-111111111111");
         _mockAccountService.Setup(s => s.GetAccountBySlugAsync("primary-savings")).ReturnsAsync(account);
 
         // Act
@@ -119,7 +119,7 @@ public class AccountRouteHandlerTests
     public async Task GetAccountByType_ShouldReturnOk_WhenAccountExists()
     {
         // Arrange
-        var account = new AccountResponseDto(1, "Primary Savings", "Savings", 500m, "primary-savings");
+        var account = new AccountResponseDto(1, "Primary Savings", "Savings", 500m, "primary-savings", "11111111-1111-1111-1111-111111111111");
         _mockAccountService.Setup(s => s.GetAccountByTypeAsync("savings")).ReturnsAsync(account);
 
         // Act
@@ -156,8 +156,8 @@ public class AccountRouteHandlerTests
     public async Task CreateAccount_ShouldReturnCreated()
     {
         // Arrange
-        var request = new CreateAccountRequestDto("Savings", "Bank", 1000m);
-        var created = new AccountResponseDto(1, "Savings", "Bank", 1000m, "savings");
+        var request = new CreateAccountRequestDto("Savings", "Bank", 1000m, TenantId: "11111111-1111-1111-1111-111111111111");
+        var created = new AccountResponseDto(1, "Savings", "Bank", 1000m, "savings", "11111111-1111-1111-1111-111111111111");
         _mockAccountService.Setup(s => s.CreateAccountAsync(request)).ReturnsAsync(created);
 
         // Act
@@ -173,12 +173,31 @@ public class AccountRouteHandlerTests
     }
 
     [TestMethod]
+    public async Task CreateAccount_ShouldReturnBadRequest_WhenTenantIdIsInvalid()
+    {
+        // Arrange
+        var request = new CreateAccountRequestDto("Savings", "Bank", 1000m, TenantId: "invalid-guid");
+        _mockAccountService.Setup(s => s.CreateAccountAsync(request)).ThrowsAsync(new ArgumentException("TenantId is required and must be a valid GUID."));
+
+        // Act
+        var result = await AccountRouteHandlers.CreateAccount(request, _mockAccountService.Object);
+
+        // Assert
+        Assert.IsNotNull(result);
+        var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
+
+        await result.ExecuteAsync(httpContext);
+        Assert.AreEqual(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+    }
+
+    [TestMethod]
     public async Task GetAccountsWithRecentTransactions_ShouldReturnOkWithAccounts()
     {
         // Arrange
         var accounts = new List<AccountWithRecentTransactionsResponseDto>
         {
-            new AccountWithRecentTransactionsResponseDto(1, "Checking", "Bank", 500m, "checking", new List<TransactionSummaryDto>())
+            new AccountWithRecentTransactionsResponseDto(1, "Checking", "Bank", 500m, "checking", "11111111-1111-1111-1111-111111111111", new List<TransactionSummaryDto>())
         };
         _mockAccountService.Setup(s => s.GetAllAccountsWithRecentTransactionsAsync()).ReturnsAsync(accounts);
 

@@ -56,7 +56,14 @@ public static class AccountRouteHandlers
 
     public static async Task<IResult> CreateAccount(CreateAccountRequestDto request, IAccountService accountService)
     {
-        var createdAccount = await accountService.CreateAccountAsync(request);
-        return Results.Created($"/api/accounts/{createdAccount.Id}", createdAccount);
+        try
+        {
+            var createdAccount = await accountService.CreateAccountAsync(request);
+            return Results.Created($"/api/accounts/{createdAccount.Id}", createdAccount);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { message = ex.Message });
+        }
     }
 }

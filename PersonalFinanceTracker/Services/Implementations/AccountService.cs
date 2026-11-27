@@ -22,7 +22,8 @@ public class AccountService : IAccountService
             a.Name,
             a.Type,
             a.CurrentBalance,
-            a.Slug
+            a.Slug,
+            a.TenantId
         ));
     }
 
@@ -44,6 +45,7 @@ public class AccountService : IAccountService
             a.Type,
             a.CurrentBalance,
             a.Slug,
+            a.TenantId,
             a.Transactions.Select(t => new TransactionSummaryDto(
                 t.Id,
                 t.DateOfTransaction,
@@ -70,7 +72,8 @@ public class AccountService : IAccountService
             account.Name,
             account.Type,
             account.CurrentBalance,
-            account.Slug
+            account.Slug,
+            account.TenantId
         );
     }
 
@@ -87,7 +90,8 @@ public class AccountService : IAccountService
             account.Name,
             account.Type,
             account.CurrentBalance,
-            account.Slug
+            account.Slug,
+            account.TenantId
         );
     }
 
@@ -104,12 +108,18 @@ public class AccountService : IAccountService
             account.Name,
             account.Type,
             account.CurrentBalance,
-            account.Slug
+            account.Slug,
+            account.TenantId
         );
     }
 
     public async Task<AccountResponseDto> CreateAccountAsync(CreateAccountRequestDto request)
     {
+        if (string.IsNullOrWhiteSpace(request.TenantId) || !Guid.TryParse(request.TenantId, out _))
+        {
+            throw new ArgumentException("TenantId is required and must be a valid GUID.");
+        }
+
         var slug = !string.IsNullOrWhiteSpace(request.Slug)
             ? request.Slug
             : GenerateSlug(request.Name);
@@ -119,6 +129,7 @@ public class AccountService : IAccountService
             Name = request.Name,
             Type = request.Type,
             Slug = slug,
+            TenantId = request.TenantId,
             CurrentBalance = request.CurrentBalance
         };
 
@@ -129,7 +140,8 @@ public class AccountService : IAccountService
             createdAccount.Name,
             createdAccount.Type,
             createdAccount.CurrentBalance,
-            createdAccount.Slug
+            createdAccount.Slug,
+            createdAccount.TenantId
         );
     }
 

@@ -5,5 +5,6 @@ public record AccountResponseDto(
     string Name,
     string Type,
     decimal CurrentBalance,
-    string Slug
+    string Slug,
+    string TenantId
 );

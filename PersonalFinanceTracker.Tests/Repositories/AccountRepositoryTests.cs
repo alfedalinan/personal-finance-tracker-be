@@ -21,7 +21,7 @@ public class AccountRepositoryTests
     public async Task GetAccountByIdAsync_ReturnsAccount_WhenExists()
     {
         using var context = GetInMemoryDbContext();
-        var account = new Account { Name = "Checking", Type = "Bank", Slug = "checking", CurrentBalance = 1000m };
+        var account = new Account { Name = "Checking", Type = "Bank", Slug = "checking", TenantId = "11111111-1111-1111-1111-111111111111", CurrentBalance = 1000m };
         context.Accounts.Add(account);
         await context.SaveChangesAsync();
 
@@ -31,13 +31,14 @@ public class AccountRepositoryTests
         Assert.IsNotNull(result);
         Assert.AreEqual("Checking", result.Name);
         Assert.AreEqual(1000m, result.CurrentBalance);
+        Assert.AreEqual("11111111-1111-1111-1111-111111111111", result.TenantId);
     }
 
     [TestMethod]
     public async Task GetAccountBySlugAsync_ReturnsAccount_WhenExists()
     {
         using var context = GetInMemoryDbContext();
-        var account = new Account { Name = "Savings", Type = "Bank", Slug = "primary-savings", CurrentBalance = 1000m };
+        var account = new Account { Name = "Savings", Type = "Bank", Slug = "primary-savings", TenantId = "11111111-1111-1111-1111-111111111111", CurrentBalance = 1000m };
         context.Accounts.Add(account);
         await context.SaveChangesAsync();
 
@@ -47,6 +48,7 @@ public class AccountRepositoryTests
         Assert.IsNotNull(result);
         Assert.AreEqual("Savings", result.Name);
         Assert.AreEqual("primary-savings", result.Slug);
+        Assert.AreEqual("11111111-1111-1111-1111-111111111111", result.TenantId);
     }
 
     [TestMethod]
@@ -63,7 +65,7 @@ public class AccountRepositoryTests
     public async Task GetAccountByTypeAsync_ReturnsAccount_WhenExists()
     {
         using var context = GetInMemoryDbContext();
-        var account = new Account { Name = "Savings", Type = "Savings", Slug = "primary-savings", CurrentBalance = 1000m };
+        var account = new Account { Name = "Savings", Type = "Savings", Slug = "primary-savings", TenantId = "11111111-1111-1111-1111-111111111111", CurrentBalance = 1000m };
         context.Accounts.Add(account);
         await context.SaveChangesAsync();
 
@@ -72,6 +74,7 @@ public class AccountRepositoryTests
 
         Assert.IsNotNull(result);
         Assert.AreEqual("Savings", result.Type);
+        Assert.AreEqual("11111111-1111-1111-1111-111111111111", result.TenantId);
     }
 
     [TestMethod]
@@ -88,8 +91,8 @@ public class AccountRepositoryTests
     public async Task GetAllAccountsAsync_ReturnsAllAccounts()
     {
         using var context = GetInMemoryDbContext();
-        context.Accounts.Add(new Account { Name = "Checking", Type = "Bank", CurrentBalance = 500m });
-        context.Accounts.Add(new Account { Name = "Savings", Type = "Bank", CurrentBalance = 5000m });
+        context.Accounts.Add(new Account { Name = "Checking", Type = "Bank", TenantId = "11111111-1111-1111-1111-111111111111", CurrentBalance = 500m });
+        context.Accounts.Add(new Account { Name = "Savings", Type = "Bank", TenantId = "11111111-1111-1111-1111-111111111111", CurrentBalance = 5000m });
         await context.SaveChangesAsync();
 
         var repo = new AccountRepository(context);
@@ -103,7 +106,7 @@ public class AccountRepositoryTests
     {
         using var context = GetInMemoryDbContext();
         var repo = new AccountRepository(context);
-        var account = new Account { Name = "Wallet", Type = "Cash", CurrentBalance = 50m };
+        var account = new Account { Name = "Wallet", Type = "Cash", TenantId = "11111111-1111-1111-1111-111111111111", CurrentBalance = 50m };
 
         var created = await repo.CreateAccountAsync(account);
 
@@ -111,13 +114,14 @@ public class AccountRepositoryTests
         var inDb = await context.Accounts.FindAsync(created.Id);
         Assert.IsNotNull(inDb);
         Assert.AreEqual("Wallet", inDb.Name);
+        Assert.AreEqual("11111111-1111-1111-1111-111111111111", inDb.TenantId);
     }
 
     [TestMethod]
     public async Task UpdateAccountAsync_UpdatesAccount()
     {
         using var context = GetInMemoryDbContext();
-        var account = new Account { Name = "Checking", Type = "Bank", CurrentBalance = 100m };
+        var account = new Account { Name = "Checking", Type = "Bank", TenantId = "11111111-1111-1111-1111-111111111111", CurrentBalance = 100m };
         context.Accounts.Add(account);
         await context.SaveChangesAsync();
 
@@ -134,7 +138,7 @@ public class AccountRepositoryTests
     public async Task DeleteAccountAsync_RemovesAccount()
     {
         using var context = GetInMemoryDbContext();
-        var account = new Account { Name = "Checking", Type = "Bank", CurrentBalance = 100m };
+        var account = new Account { Name = "Checking", Type = "Bank", TenantId = "11111111-1111-1111-1111-111111111111", CurrentBalance = 100m };
         context.Accounts.Add(account);
         await context.SaveChangesAsync();
 
@@ -149,7 +153,7 @@ public class AccountRepositoryTests
     public async Task GetAllAccountsWithRecentTransactionsAsync_ReturnsTop5OrderedTransactions()
     {
         using var context = GetInMemoryDbContext();
-        var account = new Account { Name = "Checking", Type = "Bank", CurrentBalance = 1000m };
+        var account = new Account { Name = "Checking", Type = "Bank", TenantId = "11111111-1111-1111-1111-111111111111", CurrentBalance = 1000m };
         context.Accounts.Add(account);
         await context.SaveChangesAsync();
 

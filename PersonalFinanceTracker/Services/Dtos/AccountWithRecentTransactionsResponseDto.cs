@@ -6,5 +6,6 @@ public record AccountWithRecentTransactionsResponseDto(
     string Type,
     decimal CurrentBalance,
     string Slug,
+    string TenantId,
     IEnumerable<TransactionSummaryDto> Transactions
 );
