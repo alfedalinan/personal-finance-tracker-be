@@ -22,12 +22,13 @@ public class TenantIsolationTests
     public async Task GetAccountTransactionsAndBalanceAsync_ReturnsNull_WhenTenantMismatch()
     {
         using var context = GetInMemoryDbContext();
-        var accountRepo = new AccountRepository(context);
+        var tenantContextA = new TenantContext { TenantId = "tenant-a-guid" };
+        var accountRepoA = new AccountRepository(context, tenantContextA);
         var transactionRepo = new TransactionRepository(context);
         var categoryRepo = new CategoryRepository(context);
 
         // Account belongs to Tenant A
-        var account = await accountRepo.CreateAccountAsync(new Account
+        var account = await accountRepoA.CreateAccountAsync(new Account
         {
             Name = "Tenant A Account",
             Type = "Bank",
@@ -37,7 +38,8 @@ public class TenantIsolationTests
 
         // Request executed with Tenant B context
         var tenantContextB = new TenantContext { TenantId = "tenant-b-guid" };
-        var service = new TransactionService(transactionRepo, accountRepo, categoryRepo, context, tenantContextB);
+        var accountRepoB = new AccountRepository(context, tenantContextB);
+        var service = new TransactionService(transactionRepo, accountRepoB, categoryRepo, context, tenantContextB);
 
         var result = await service.GetAccountTransactionsAndBalanceAsync(account.Id, "2026-01-01", null);
 
@@ -48,7 +50,8 @@ public class TenantIsolationTests
     public async Task GetAccountTransactionsAndBalanceAsync_ReturnsAccount_WhenTenantMatches()
     {
         using var context = GetInMemoryDbContext();
-        var accountRepo = new AccountRepository(context);
+        var tenantContextA = new TenantContext { TenantId = "tenant-a-guid" };
+        var accountRepo = new AccountRepository(context, tenantContextA);
         var transactionRepo = new TransactionRepository(context);
         var categoryRepo = new CategoryRepository(context);
 
@@ -62,7 +65,6 @@ public class TenantIsolationTests
         });
 
         // Request executed with Tenant A context
-        var tenantContextA = new TenantContext { TenantId = "tenant-a-guid" };
         var service = new TransactionService(transactionRepo, accountRepo, categoryRepo, context, tenantContextA);
 
         var result = await service.GetAccountTransactionsAndBalanceAsync(account.Id, "2026-01-01", null);

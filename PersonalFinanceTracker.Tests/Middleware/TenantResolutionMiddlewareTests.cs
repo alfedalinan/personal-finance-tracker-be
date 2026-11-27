@@ -29,9 +29,22 @@ public class TenantResolutionMiddlewareTests
             builder.UseEnvironment("Production");
         }).CreateClient();
 
-        client.DefaultRequestHeaders.Add("x-tenant-id", "11111111-1111-1111-1111-111111111111");
+        client.DefaultRequestHeaders.Add("X-Tenant-ID", "  11111111-1111-1111-1111-111111111111  ");
 
         var response = await client.GetAsync("/api/accounts/1/transactions?startDate=2026-01-01");
+        Assert.AreNotEqual(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task Middleware_NonApiRoute_BypassesValidation_InProduction()
+    {
+        var client = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Production");
+        }).CreateClient();
+
+        // /openapi/v1.json should not require X-Tenant-ID in production
+        var response = await client.GetAsync("/openapi/v1.json");
         Assert.AreNotEqual(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
     }
 

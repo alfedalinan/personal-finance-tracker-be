@@ -31,9 +31,12 @@ public class TenantResolutionMiddleware
             }
         }
 
+            var isApiRequest = context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase);
+
         if (string.IsNullOrWhiteSpace(tenantId))
         {
-            if (_env.IsDevelopment() || 
+                if (!isApiRequest || 
+                    _env.IsDevelopment() || 
                 _env.IsEnvironment("Test") || 
                 _env.IsEnvironment("Testing") || 
                 string.Equals(_env.EnvironmentName, "Test", StringComparison.OrdinalIgnoreCase) ||
@@ -50,7 +53,7 @@ public class TenantResolutionMiddleware
             }
         }
 
-        tenantContext.TenantId = tenantId.Trim();
+            tenantContext.TenantId = tenantId.Trim().ToLowerInvariant();
         await _next(context);
     }
 }
